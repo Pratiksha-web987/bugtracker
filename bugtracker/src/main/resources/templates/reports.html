@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Reports - AI Bug Tracker</title>
+
+    <link rel="icon"
+          type="image/png"
+          th:href="@{/images/logo.png}">
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f7fb;
+            color: #1f2937;
+        }
+
+        /* ================= NAVBAR ================= */
+
+        .navbar {
+            height: 68px;
+            background: #111827;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 35px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            text-decoration: none;
+            font-size: 21px;
+            font-weight: 700;
+        }
+
+        .project-logo {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav-links a {
+            color: #d1d5db;
+            text-decoration: none;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: white;
+        }
+
+        .nav-links .active {
+            color: white;
+            font-weight: 600;
+        }
+
+        /* ================= CONTAINER ================= */
+
+        .container {
+            max-width: 1250px;
+            margin: 35px auto;
+            padding: 0 20px;
+        }
+
+        .page-header {
+            margin-bottom: 28px;
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 30px;
+            color: #111827;
+        }
+
+        .page-header p {
+            margin-top: 8px;
+            color: #6b7280;
+            font-size: 15px;
+        }
+
+        /* ================= SUMMARY CARDS ================= */
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .summary-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 22px;
+            box-shadow: 0 3px 12px rgba(15, 23, 42, 0.05);
+        }
+
+        .summary-card .label {
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .summary-card .value {
+            font-size: 30px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        /* ================= REPORT GRID ================= */
+
+        .report-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+            margin-bottom: 28px;
+        }
+
+        .report-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 3px 12px rgba(15, 23, 42, 0.05);
+        }
+
+        .report-card h2 {
+            margin: 0 0 18px;
+            font-size: 19px;
+            color: #111827;
+        }
+
+        /* ================= STAT ROW ================= */
+
+        .stat-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 13px 0;
+            border-bottom: 1px solid #eef2f7;
+        }
+
+        .stat-row:last-child {
+            border-bottom: none;
+        }
+
+        .stat-name {
+            color: #475569;
+            font-size: 14px;
+        }
+
+        .stat-value {
+            font-weight: 700;
+            color: #111827;
+        }
+
+        /* ================= BADGES ================= */
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .open {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .triaged {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .assigned {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .in-progress {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .fixed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .retesting {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .closed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .reopened {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* ================= BUG TABLE ================= */
+
+        .table-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 3px 12px rgba(15, 23, 42, 0.05);
+            overflow-x: auto;
+        }
+
+        .table-card h2 {
+            margin: 0 0 20px;
+            font-size: 19px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th {
+            text-align: left;
+            padding: 13px;
+            background: #f8fafc;
+            color: #475569;
+            font-size: 13px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        td {
+            padding: 14px 13px;
+            border-bottom: 1px solid #eef2f7;
+            font-size: 13px;
+        }
+
+        tr:hover td {
+            background: #fafcff;
+        }
+
+        .bug-title {
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .view-btn {
+            display: inline-block;
+            padding: 7px 12px;
+            border-radius: 7px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .view-btn:hover {
+            background: #1d4ed8;
+        }
+
+        /* ================= RESPONSIVE ================= */
+
+        @media (max-width: 950px) {
+
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .report-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .navbar {
+                padding: 0 20px;
+            }
+
+            .nav-links {
+                gap: 14px;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            .navbar {
+                height: auto;
+                padding: 15px 18px;
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .summary-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header h1 {
+                font-size: 25px;
+            }
+
+            .container {
+                margin-top: 25px;
+            }
+        }
+        .export-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: #111827;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.2s ease;
+        }
+
+        .export-btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* ================= VIBRANT REPORTS THEME ================= */
+
+        /* Page background */
+        body {
+            background: linear-gradient(
+                    135deg,
+                    #dff7ff 0%,
+                    #fce7f3 35%,
+                    #ede9fe 65%,
+                    #dbeafe 100%
+            );
+            background-attachment: fixed;
+            color: #172554;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(
+                    110deg,
+                    #111b55,
+                    #312e81,
+                    #6d28d9
+            );
+            box-shadow: 0 5px 20px rgba(49, 46, 129, 0.25);
+        }
+
+        .nav-links {
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            padding: 9px 12px;
+            border-radius: 10px;
+            transition: all 0.25s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links .active {
+            background: rgba(255, 255, 255, 0.16);
+            color: white;
+        }
+
+        .nav-links .active {
+            font-weight: 700;
+        }
+
+        /* Page heading */
+        .page-header h1 {
+            color: #312e81;
+            font-weight: 800;
+        }
+
+        .page-header p {
+            color: #64748b;
+        }
+
+        /* Summary cards */
+        .summary-card {
+            color: white;
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 8px 22px rgba(30, 41, 59, 0.14);
+            transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+
+        .summary-card:nth-child(1) {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+        }
+
+        .summary-card:nth-child(2) {
+            background: linear-gradient(135deg, #f43f5e, #ec4899);
+        }
+
+        .summary-card:nth-child(3) {
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+        }
+
+        .summary-card:nth-child(4) {
+            background: linear-gradient(135deg, #0d9488, #10b981);
+        }
+
+        .summary-card .label {
+            color: rgba(255, 255, 255, 0.88);
+        }
+
+        .summary-card .value {
+            color: white;
+            font-size: 34px;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 14px 28px rgba(30, 41, 59, 0.2);
+        }
+
+        /* Report cards */
+        .report-card,
+        .table-card {
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(51, 65, 85, 0.09);
+            backdrop-filter: blur(10px);
+        }
+
+        .report-card h2,
+        .table-card h2 {
+            color: #312e81;
+            font-weight: 700;
+        }
+
+        /* Distribution rows */
+        .stat-row {
+            border-bottom: 1px solid #e9e7f5;
+        }
+
+        .stat-name {
+            color: #475569;
+        }
+
+        .stat-value {
+            color: #312e81;
+            font-size: 15px;
+        }
+
+        /* Status badges */
+        .badge {
+            border-radius: 8px;
+            padding: 6px 10px;
+        }
+
+        /* Bug table */
+        .table-card {
+            overflow-x: auto;
+        }
+
+        table {
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th {
+            background: linear-gradient(135deg, #312e81, #6d28d9);
+            color: white;
+            border-bottom: none;
+            padding: 15px 13px;
+        }
+
+        td {
+            color: #334155;
+            border-bottom: 1px solid #e9e7f5;
+        }
+
+        tbody tr:hover td {
+            background: #f0f4ff;
+        }
+
+        .bug-title {
+            color: #312e81;
+            font-weight: 700;
+        }
+
+        /* View button */
+        .view-btn {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            border-radius: 9px;
+            padding: 8px 14px;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+            transition: all 0.25s ease;
+        }
+
+        .view-btn:hover {
+            background: linear-gradient(135deg, #1d4ed8, #6d28d9);
+            transform: translateY(-2px);
+        }
+
+        /* Export CSV button */
+        .export-btn {
+            background: linear-gradient(135deg, #0d9488, #10b981);
+            border-radius: 10px;
+            box-shadow: 0 5px 12px rgba(16, 185, 129, 0.2);
+            white-space: nowrap;
+        }
+
+        .export-btn:hover {
+            background: linear-gradient(135deg, #0f766e, #059669);
+            opacity: 1;
+            transform: translateY(-2px);
+        }
+
+        /* Responsive navbar */
+        @media (max-width: 950px) {
+            .navbar {
+                height: auto;
+                padding: 15px 20px;
+                flex-wrap: wrap;
+                gap: 12px;
+            }
+
+            .nav-links {
+                gap: 8px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .nav-links {
+                justify-content: center;
+            }
+
+            .summary-card .value {
+                font-size: 30px;
+            }
+        }
+
+    </style>
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+
+<nav class="navbar">
+
+    <a th:href="@{/dashboard}" class="brand">
+
+        <span>🐞AI Bug Tracker</span>
+
+    </a>
+
+    <div class="nav-links">
+
+        <a th:href="@{/dashboard}">
+            Dashboard
+        </a>
+
+        <a th:href="@{/projects}">
+            Projects
+        </a>
+
+        <a th:href="@{/bugs}">
+            Bugs
+        </a>
+
+        <a th:href="@{/bugs/new}">
+            Report Bug
+        </a>
+
+        <a th:href="@{/reports}" class="active">
+            Reports
+        </a>
+
+        <a th:href="@{/logout}">
+            Logout
+        </a>
+
+        <a th:href="@{/reports/export}" class="export-btn">
+            📥 Export CSV
+        </a>
+    </div>
+
+</nav>
+
+
+<!-- ================= MAIN ================= -->
+
+<div class="container">
+
+    <div class="page-header">
+
+        <h1>Reports & Analytics</h1>
+
+        <p>
+            Overview of bugs, priorities, severity and workflow status.
+        </p>
+
+    </div>
+
+
+    <!-- ================= SUMMARY ================= -->
+
+    <div class="summary-grid">
+
+        <div class="summary-card">
+
+            <div class="label">
+                Total Bugs
+            </div>
+
+            <div class="value"
+                 th:text="${totalBugs}">
+                0
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="label">
+                Open Bugs
+            </div>
+
+            <div class="value"
+                 th:text="${openBugs}">
+                0
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="label">
+                In Progress
+            </div>
+
+            <div class="value"
+                 th:text="${inProgressBugs}">
+                0
+            </div>
+
+        </div>
+
+
+        <div class="summary-card">
+
+            <div class="label">
+                Closed Bugs
+            </div>
+
+            <div class="value"
+                 th:text="${closedBugs}">
+                0
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= REPORT CARDS ================= -->
+
+    <div class="report-grid">
+
+
+        <!-- STATUS -->
+
+        <div class="report-card">
+
+            <h2>Bug Status Distribution</h2>
+
+            <div class="stat-row">
+                <span class="stat-name">
+                    <span class="badge open">OPEN</span>
+                </span>
+                <span class="stat-value"
+                      th:text="${openBugs}">
+                    0
+                </span>
+            </div>
+
+            <div class="stat-row">
+                <span class="stat-name">
+                    <span class="badge triaged">TRIAGED</span>
+                </span>
+                <span class="stat-value"
+                      th:text="${triagedBugs}">
+                    0
+                </span>
+            </div>
+
+            <div class="stat-row">
+                <span class="stat-name">
+                    <span class="badge assigned">ASSIGNED</span>
+                </span>
+                <span class="stat-value"
+                      th:text="${assignedBugs}">
+                    0
+                </span>
+            </div>
+
+            <div class="stat-row">
+                <span class="stat-name">
+                    <span class="badge in-progress">
+                        IN PROGRESS
+                    </span>
+                </span>
+                <span class="stat-value"
+                      th:text="${inProgressBugs}">
+                    0
+                </span>
+            </div>
+
+            <div class="stat-row">
+                <span class="stat-name">
+                    <span class="badge fixed">FIXED</span>
+                </span>
+                <span class="stat-value"
+                      th:text="${fixedBugs}">
+                    0
+                </span>
+            </div>
+
+            <div class="stat-row">
+                <span class="stat-name">
+                    <span class="badge retesting">
+                        RETESTING
+                    </span>
+                </span>
+                <span class="stat-value"
+                      th:text="${retestingBugs}">
+                    0
+                </span>
+            </div>
+
+            <div class="stat-row">
+                <span class="stat-name">
+                    <span class="badge closed">CLOSED</span>
+                </span>
+                <span class="stat-value"
+                      th:text="${closedBugs}">
+                    0
+                </span>
+            </div>
+
+            <div class="stat-row">
+                <span class="stat-name">
+                    <span class="badge reopened">
+                        REOPENED
+                    </span>
+                </span>
+                <span class="stat-value"
+                      th:text="${reopenedBugs}">
+                    0
+                </span>
+            </div>
+
+        </div>
+
+
+        <!-- PRIORITY -->
+
+        <div class="report-card">
+
+            <h2>Priority Distribution</h2>
+
+            <div class="stat-row">
+
+                <span class="stat-name">
+                    Low Priority
+                </span>
+
+                <span class="stat-value"
+                      th:text="${lowPriority}">
+                    0
+                </span>
+
+            </div>
+
+            <div class="stat-row">
+
+                <span class="stat-name">
+                    Medium Priority
+                </span>
+
+                <span class="stat-value"
+                      th:text="${mediumPriority}">
+                    0
+                </span>
+
+            </div>
+
+            <div class="stat-row">
+
+                <span class="stat-name">
+                    High Priority
+                </span>
+
+                <span class="stat-value"
+                      th:text="${highPriority}">
+                    0
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- SEVERITY -->
+
+        <div class="report-card">
+
+            <h2>Severity Distribution</h2>
+
+            <div class="stat-row">
+
+                <span class="stat-name">
+                    Minor
+                </span>
+
+                <span class="stat-value"
+                      th:text="${minorSeverity}">
+                    0
+                </span>
+
+            </div>
+
+            <div class="stat-row">
+
+                <span class="stat-name">
+                    Major
+                </span>
+
+                <span class="stat-value"
+                      th:text="${majorSeverity}">
+                    0
+                </span>
+
+            </div>
+
+            <div class="stat-row">
+
+                <span class="stat-name">
+                    Critical
+                </span>
+
+                <span class="stat-value"
+                      th:text="${criticalSeverity}">
+                    0
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================= BUG TABLE ================= -->
+
+    <div class="table-card">
+
+        <h2>Bug Report</h2>
+
+        <table>
+
+            <thead>
+
+            <tr>
+
+                <th>ID</th>
+
+                <th>Title</th>
+
+                <th>Project</th>
+
+                <th>Priority</th>
+
+                <th>Severity</th>
+
+                <th>Status</th>
+
+                <th>Action</th>
+
+            </tr>
+
+            </thead>
+
+            <tbody>
+
+            <tr th:each="bug : ${bugs}">
+
+                <td th:text="${bug.id}">
+                    1
+                </td>
+
+                <td class="bug-title"
+                    th:text="${bug.title}">
+                    Bug Title
+                </td>
+
+                <td th:text="${bug.project.name}">
+                    Project
+                </td>
+
+                <td th:text="${bug.priority}">
+                    HIGH
+                </td>
+
+                <td th:text="${bug.severity}">
+                    MAJOR
+                </td>
+
+                <td th:text="${bug.status}">
+                    OPEN
+                </td>
+
+                <td>
+
+                    <a th:href="@{/bugs/{id}(id=${bug.id})}"
+                       class="view-btn">
+                        View
+                    </a>
+
+                </td>
+
+            </tr>
+
+            <tr th:if="${#lists.isEmpty(bugs)}">
+
+                <td colspan="7"
+                    style="text-align:center; padding:30px; color:#64748b;">
+
+                    No bugs available for reporting.
+
+                </td>
+
+            </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+</body>
+
+</html>

@@ -1,0 +1,2858 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Bug Details</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            color: #222;
+        }
+
+        .navbar {
+            background: #1f2937;
+            color: white;
+            padding: 18px 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h2 {
+            margin: 0;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+
+        .logout-btn {
+            border: none;
+            background: #dc2626;
+            color: white;
+            padding: 9px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1100px;
+            margin: 35px auto;
+        }
+
+        .header-card,
+        .section,
+        .comments-section {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+        }
+
+        .header-card h1 {
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+
+        .bug-id {
+            color: #666;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .detail {
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 7px;
+        }
+
+        .detail strong {
+            display: block;
+            margin-bottom: 6px;
+            color: #555;
+        }
+
+        .action-form {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        select {
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+        }
+
+        .btn {
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #2563eb;
+            color: white;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+        }
+
+        .text-section {
+            line-height: 1.6;
+            white-space: pre-wrap;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 7px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .link-btn {
+            display: inline-block;
+            padding: 11px 17px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .link-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .back-btn {
+            background: #6b7280;
+        }
+
+        .back-btn:hover {
+            background: #4b5563;
+        }
+
+        .date-info {
+            color: #555;
+            margin: 8px 0;
+        }
+
+
+        /* =========================
+           COMMENTS
+           ========================= */
+
+        .comment-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .comment-form textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            resize: vertical;
+        }
+
+        .comment-form button {
+            width: fit-content;
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .comment-form button:hover {
+            background: #1d4ed8;
+        }
+
+        .comment {
+            border-bottom: 1px solid #eee;
+            padding: 15px 0;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .comment-header span {
+            color: #777;
+            font-size: 13px;
+        }
+
+        .comment p {
+            margin: 0;
+            color: #444;
+        }
+
+        .no-comments {
+            color: #777;
+            padding: 15px 0;
+        }
+
+        .delete-comment-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .delete-comment-btn:hover {
+            background: #b91c1c;
+        }
+
+
+        /* =========================
+           AI ANALYSIS
+           ========================= */
+
+        .ai-section {
+            background: white;
+            border-left: 5px solid #7c3aed;
+        }
+
+        .ai-subtitle {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .ai-btn {
+            background: #7c3aed;
+        }
+
+        .ai-btn:hover {
+            background: #6d28d9;
+        }
+
+        .ai-loading {
+            display: none;
+            margin-top: 20px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        .ai-result {
+            display: none;
+            margin-top: 25px;
+        }
+
+        .ai-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 18px;
+        }
+
+        .ai-card {
+            background: #f8fafc;
+            padding: 18px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .ai-card strong {
+            display: block;
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        .ai-card span {
+            font-size: 17px;
+            font-weight: bold;
+        }
+
+        .ai-fix {
+            background: #f8fafc;
+            padding: 18px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            line-height: 1.6;
+        }
+
+        .ai-fix strong {
+            display: block;
+            margin-bottom: 8px;
+        }
+        .fix-ai-btn {
+            background: #16a34a;
+            margin-left: 8px;
+        }
+
+        .fix-ai-btn:hover {
+            background: #15803d;
+        }
+
+        .fix-loading {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0fdf4;
+            border-radius: 8px;
+            color: #166534;
+            font-weight: bold;
+        }
+
+        .fix-result {
+            display: none;
+            margin-top: 25px;
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .fix-header {
+            padding: 18px 20px;
+            background: #f0fdf4;
+            border-bottom: 1px solid #bbf7d0;
+        }
+
+        .fix-header h3 {
+            margin: 0 0 5px;
+            color: #166534;
+        }
+
+        .fix-header p {
+            margin: 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .fix-content {
+            padding: 20px;
+        }
+
+        .fix-card {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 9px;
+            padding: 18px;
+            margin-bottom: 15px;
+        }
+
+        .fix-card strong {
+            display: block;
+            color: #166534;
+            margin-bottom: 8px;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        .fix-card span {
+            color: #374151;
+            line-height: 1.6;
+            white-space: pre-line;
+        }
+
+        .fix-risk {
+            padding: 15px;
+            background: #fff7ed;
+            border-left: 4px solid #ea580c;
+            border-radius: 7px;
+        }
+
+        .fix-risk strong {
+            color: #c2410c;
+        }
+
+        .fix-risk span {
+            color: #7c2d12;
+            font-weight: bold;
+        }
+
+        @media (max-width: 700px) {
+            .fix-ai-btn {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
+
+
+        /* =========================
+           RESPONSIVE
+           ========================= */
+
+        @media (max-width: 700px) {
+
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .ai-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+        /* =========================
+    AI DUPLICATE CHECK
+    ========================= */
+
+        .duplicate-ai-btn {
+            background: #0f766e;
+            margin-left: 8px;
+        }
+
+        .duplicate-ai-btn:hover {
+            background: #115e59;
+        }
+
+        .duplicate-result {
+            display: none;
+            margin-top: 25px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .duplicate-header {
+            padding: 18px 20px;
+            background: #f8fafc;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .duplicate-header h3 {
+            margin: 0 0 5px;
+            color: #1f2937;
+        }
+
+        .duplicate-header p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .duplicate-content {
+            padding: 20px;
+        }
+
+        .duplicate-status {
+            display: inline-block;
+            padding: 7px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: bold;
+            background: #fff7ed;
+            color: #c2410c;
+            margin-bottom: 18px;
+        }
+
+        .duplicate-grid {
+            display: grid;
+            grid-template-columns: 120px 1fr 150px;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .duplicate-card {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 9px;
+            padding: 15px;
+        }
+
+        .duplicate-card strong {
+            display: block;
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 7px;
+            text-transform: uppercase;
+        }
+
+        .duplicate-card span {
+            font-size: 15px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .similarity {
+            font-size: 24px !important;
+            color: #c2410c !important;
+        }
+
+        .duplicate-recommendation {
+            padding: 15px;
+            background: #f5f3ff;
+            border-left: 4px solid #7c3aed;
+            border-radius: 7px;
+            line-height: 1.5;
+        }
+
+        .duplicate-recommendation strong {
+            display: block;
+            color: #5b21b6;
+            margin-bottom: 5px;
+        }
+
+        .duplicate-recommendation span {
+            color: #4b5563;
+            font-size: 14px;
+        }
+
+        .duplicate-loading {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8fafc;
+            border-radius: 8px;
+            color: #555;
+            font-weight: bold;
+        }
+
+        @media (max-width: 700px) {
+
+            .duplicate-ai-btn {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+
+            .duplicate-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* =========================
+   AI ROOT CAUSE ANALYSIS
+   ========================= */
+
+        .root-cause-btn {
+            background: #d97706;
+            margin-left: 8px;
+        }
+
+        .root-cause-btn:hover {
+            background: #b45309;
+        }
+
+        .root-cause-loading {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background: #fffbeb;
+            border-radius: 8px;
+            color: #92400e;
+            font-weight: bold;
+        }
+
+        .root-cause-result {
+            display: none;
+            margin-top: 25px;
+            border: 1px solid #fde68a;
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .root-cause-header {
+            padding: 18px 20px;
+            background: #fffbeb;
+            border-bottom: 1px solid #fde68a;
+        }
+
+        .root-cause-header h3 {
+            margin: 0 0 5px;
+            color: #92400e;
+        }
+
+        .root-cause-header p {
+            margin: 0;
+            color: #78716c;
+            font-size: 14px;
+        }
+
+        .root-cause-content {
+            padding: 20px;
+        }
+
+        .root-cause-card {
+            background: #f8fafc;
+            border: 1px solid #e5e7eb;
+            border-radius: 9px;
+            padding: 18px;
+            margin-bottom: 15px;
+        }
+
+        .root-cause-card strong {
+            display: block;
+            color: #92400e;
+            margin-bottom: 8px;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        .root-cause-card span {
+            color: #1f2937;
+            font-size: 16px;
+            font-weight: bold;
+            line-height: 1.5;
+        }
+
+        .root-cause-recommendation {
+            padding: 15px;
+            background: #f5f3ff;
+            border-left: 4px solid #7c3aed;
+            border-radius: 7px;
+            line-height: 1.6;
+        }
+
+        .root-cause-recommendation strong {
+            display: block;
+            color: #5b21b6;
+            margin-bottom: 5px;
+        }
+
+        .root-cause-recommendation span {
+            color: #4b5563;
+            font-size: 14px;
+        }
+
+        @media (max-width: 700px) {
+
+            .root-cause-btn {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+
+        }
+        /* ================================
+   AI DEVELOPER RECOMMENDATION
+   ================================ */
+
+        .developer-loading {
+            display: none;
+            margin-top: 18px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            background: #f5f7ff;
+            border: 1px solid #dbe2ff;
+            color: #4f46e5;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .developer-result {
+            display: none;
+            margin-top: 20px;
+            padding: 0;
+            overflow: hidden;
+            border-radius: 18px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+        }
+
+        .developer-header {
+            padding: 20px 24px;
+            background: linear-gradient(135deg, #eef2ff, #f8fafc);
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .developer-header h3,
+        .developer-header strong {
+            margin: 0;
+            color: #1e293b;
+            font-size: 20px;
+        }
+
+        .developer-header p {
+            margin: 6px 0 0;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .developer-content {
+            padding: 22px 24px;
+        }
+
+        .developer-card {
+            padding: 18px;
+            margin-bottom: 14px;
+            border-radius: 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+
+        .developer-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .developer-label {
+            margin-bottom: 7px;
+            color: #64748b;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .developer-name {
+            color: #1e293b;
+            font-size: 21px;
+            font-weight: 700;
+        }
+
+        #developerEmail {
+            color: #475569;
+            font-size: 15px;
+        }
+
+        #developerReason {
+            color: #475569;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        /* Recommendation icon/highlight */
+        .developer-recommendation-box {
+            margin-top: 16px;
+            padding: 16px 18px;
+            border-left: 4px solid #4f46e5;
+            border-radius: 10px;
+            background: #f5f7ff;
+            color: #475569;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .developer-header,
+            .developer-content {
+                padding: 18px;
+            }
+
+            .developer-name {
+                font-size: 18px;
+            }
+        }
+        .developer-ai-btn {
+            background: #4f46e5;
+            margin-left: 8px;
+        }
+
+        .developer-ai-btn:hover {
+            background: #4338ca;
+        }
+
+        .developer-card strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #64748b;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        .developer-card span {
+            color: #1e293b;
+            font-size: 16px;
+            font-weight: 600;
+            line-height: 1.6;
+        }
+
+        .developer-recommendation {
+            margin-top: 16px;
+            padding: 16px 18px;
+            border-left: 4px solid #4f46e5;
+            border-radius: 10px;
+            background: #f5f7ff;
+            line-height: 1.6;
+        }
+
+        .developer-recommendation strong {
+            display: block;
+            color: #4338ca;
+            margin-bottom: 7px;
+        }
+
+        .developer-recommendation span {
+            color: #475569;
+            font-size: 14px;
+            font-weight: normal;
+        }
+        /* =========================
+   PROFESSIONAL COMMENTS
+   ========================= */
+
+        .comments-section h2,
+        .section h2 {
+            color: #111827;
+        }
+
+        .comment-form textarea {
+            transition: 0.2s;
+            font-family: Arial, sans-serif;
+        }
+
+        .comment-form textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .comment {
+            position: relative;
+            padding: 18px 0 18px 18px;
+            border-bottom: 1px solid #e5e7eb;
+            border-left: 3px solid #dbeafe;
+            margin-bottom: 10px;
+        }
+
+        .comment:last-child {
+            border-bottom: none;
+        }
+
+        .comment-header {
+            align-items: center;
+        }
+
+        .comment-header strong {
+            color: #1f2937;
+            font-size: 15px;
+        }
+
+        .comment-header span {
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .comment p {
+            margin-top: 8px;
+            line-height: 1.6;
+            color: #475569;
+        }
+
+        .delete-comment-btn {
+            float: right;
+            margin-left: 10px;
+        }
+
+        /* =========================
+           PROFESSIONAL TIMELINE
+           ========================= */
+
+        .timeline {
+            position: relative;
+            margin-top: 25px;
+            padding-left: 32px;
+        }
+
+        .timeline::before {
+            content: "";
+            position: absolute;
+            left: 8px;
+            top: 5px;
+            bottom: 5px;
+            width: 2px;
+            background: #dbeafe;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -30px;
+            top: 3px;
+            width: 17px;
+            height: 17px;
+            border-radius: 50%;
+            background: #2563eb;
+            border: 4px solid #dbeafe;
+        }
+
+        .timeline-content {
+            background: #f8fafc;
+            padding: 15px 18px;
+            border-radius: 9px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .timeline-content strong {
+            display: block;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .timeline-content span {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        /* =========================
+   BUG DETAILS - PASTEL THEME
+   ========================= */
+
+        body {
+            background: linear-gradient(135deg, #e0e7ff, #fce7f3, #ede9fe);
+            color: #334155;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+            color: white;
+            padding: 18px 35px;
+            box-shadow: 0 5px 18px rgba(91, 33, 182, 0.2);
+        }
+
+        .navbar h2 {
+            font-size: 23px;
+            font-weight: 700;
+        }
+
+        .nav-links a {
+            color: white;
+            transition: 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: #ede9fe;
+            text-decoration: none;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #fb7185, #e11d48);
+            border-radius: 9px;
+            padding: 10px 17px;
+            transition: 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background: #be123c;
+        }
+
+        /* MAIN CONTAINER */
+        .container {
+            max-width: 1150px;
+            margin: 35px auto;
+        }
+
+        /* HEADER AND SECTIONS */
+        .header-card,
+        .section,
+        .comments-section {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 28px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            box-shadow: 0 8px 25px rgba(91, 33, 182, 0.09);
+            margin-bottom: 25px;
+        }
+
+        .header-card h1 {
+            color: #6d28d9;
+            font-size: 30px;
+        }
+
+        .bug-id {
+            color: #64748b;
+        }
+
+        /* SECTION HEADINGS */
+        .section h2,
+        .comments-section h2 {
+            color: #6d28d9;
+            font-size: 21px;
+            margin-bottom: 10px;
+        }
+
+        .ai-subtitle {
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        /* BUG DETAILS GRID */
+        .details-grid {
+            gap: 18px;
+        }
+
+        .detail {
+            background: linear-gradient(135deg, #f5f3ff, #fdf2f8);
+            border: 1px solid #e9d5ff;
+            border-radius: 12px;
+            padding: 18px;
+            overflow-wrap: anywhere;
+        }
+
+        .detail strong {
+            color: #6d28d9;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .detail span {
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        /* INPUTS AND SELECTS */
+        select,
+        .comment-form textarea {
+            border: 1px solid #ddd6fe;
+            border-radius: 10px;
+            background: #faf9ff;
+            color: #334155;
+            font-family: inherit;
+            padding: 12px 15px;
+            transition: 0.2s ease;
+        }
+
+        select:focus,
+        .comment-form textarea:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.12);
+        }
+
+        /* BUTTONS */
+        .btn,
+        .link-btn,
+        .comment-form button {
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 18px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: 0.25s ease;
+        }
+
+        .btn:hover,
+        .link-btn:hover,
+        .comment-form button:hover {
+            background: linear-gradient(135deg, #6d28d9, #4338ca);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(109, 40, 217, 0.2);
+        }
+
+        /* AI BUTTON COLORS */
+        .ai-btn {
+            background: linear-gradient(135deg, #7c3aed, #4f46e5);
+        }
+
+        .duplicate-ai-btn {
+            background: linear-gradient(135deg, #0d9488, #0f766e);
+            margin-left: 8px;
+        }
+
+        .root-cause-btn {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            margin-left: 8px;
+        }
+
+        .fix-ai-btn {
+            background: linear-gradient(135deg, #22c55e, #15803d);
+            margin-left: 8px;
+        }
+
+        .developer-ai-btn {
+            background: linear-gradient(135deg, #6366f1, #4338ca);
+            margin-left: 8px;
+        }
+
+        /* AI RESULT CARDS */
+        .ai-card,
+        .ai-fix,
+        .duplicate-card,
+        .root-cause-card,
+        .fix-card,
+        .developer-card {
+            background: linear-gradient(135deg, #f5f3ff, #fdf2f8);
+            border: 1px solid #e9d5ff;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .ai-card strong,
+        .duplicate-card strong,
+        .root-cause-card strong,
+        .fix-card strong,
+        .developer-card strong {
+            color: #6d28d9;
+        }
+
+        .ai-card span,
+        .duplicate-card span,
+        .root-cause-card span,
+        .fix-card span,
+        .developer-card span {
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        /* AI PANELS */
+        .ai-section {
+            border-left: 5px solid #8b5cf6;
+        }
+
+        .duplicate-result {
+            border-color: #c4b5fd;
+            border-radius: 14px;
+        }
+
+        .duplicate-header {
+            background: linear-gradient(135deg, #ede9fe, #fce7f3);
+        }
+
+        .duplicate-header h3 {
+            color: #6d28d9;
+        }
+
+        .duplicate-recommendation,
+        .root-cause-recommendation,
+        .developer-recommendation {
+            background: #f5f3ff;
+            border-left-color: #8b5cf6;
+            border-radius: 10px;
+        }
+
+        .root-cause-result {
+            border-color: #fde68a;
+            border-radius: 14px;
+        }
+
+        .root-cause-header {
+            background: linear-gradient(135deg, #fef3c7, #fffbeb);
+        }
+
+        .fix-result {
+            border-color: #bbf7d0;
+            border-radius: 14px;
+        }
+
+        .fix-header {
+            background: linear-gradient(135deg, #dcfce7, #f0fdf4);
+        }
+
+        .developer-result {
+            border-color: #c4b5fd;
+            border-radius: 14px;
+        }
+
+        .developer-header {
+            background: linear-gradient(135deg, #ede9fe, #e0e7ff);
+        }
+
+        .developer-header h3 {
+            color: #6d28d9;
+        }
+
+        /* LOADING MESSAGES */
+        .ai-loading,
+        .duplicate-loading,
+        .developer-loading {
+            background: #f5f3ff;
+            color: #6d28d9;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .fix-loading {
+            background: #f0fdf4;
+            color: #166534;
+            border-radius: 10px;
+        }
+
+        /* COMMENTS */
+        .comment {
+            border-left: 3px solid #c4b5fd;
+            border-bottom: 1px solid #ede9fe;
+            border-radius: 8px;
+            padding: 18px;
+            margin-bottom: 12px;
+            background: #faf9ff;
+        }
+
+        .comment-header strong {
+            color: #6d28d9;
+        }
+
+        .comment-header span {
+            color: #64748b;
+        }
+
+        .comment p {
+            color: #475569;
+            line-height: 1.7;
+            overflow-wrap: anywhere;
+        }
+
+        .delete-comment-btn {
+            background: linear-gradient(135deg, #fb7185, #e11d48);
+            border-radius: 8px;
+        }
+
+        .delete-comment-btn:hover {
+            background: #be123c;
+        }
+
+        /* TIMELINE */
+        .timeline::before {
+            background: linear-gradient(#a78bfa, #f9a8d4);
+        }
+
+        .timeline-dot {
+            background: #8b5cf6;
+            border-color: #ede9fe;
+        }
+
+        .timeline-content {
+            background: linear-gradient(135deg, #f5f3ff, #fdf2f8);
+            border: 1px solid #e9d5ff;
+            border-radius: 12px;
+        }
+
+        .timeline-content strong {
+            color: #6d28d9;
+        }
+
+        .timeline-content span {
+            color: #64748b;
+        }
+
+        /* TEXT CONTENT */
+        .text-section {
+            background: linear-gradient(135deg, #f5f3ff, #fdf2f8);
+            border: 1px solid #e9d5ff;
+            border-radius: 12px;
+            color: #334155;
+            line-height: 1.8;
+            overflow-wrap: anywhere;
+        }
+
+        /* BACK BUTTON */
+        .back-btn {
+            background: linear-gradient(135deg, #94a3b8, #64748b);
+        }
+
+        .back-btn:hover {
+            background: #475569;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 700px) {
+            .container {
+                width: 94%;
+                margin: 22px auto;
+            }
+
+            .header-card,
+            .section,
+            .comments-section {
+                padding: 20px;
+            }
+
+            .navbar {
+                padding: 18px;
+            }
+
+            .nav-links {
+                gap: 12px;
+            }
+
+            .duplicate-ai-btn,
+            .root-cause-btn,
+            .fix-ai-btn,
+            .developer-ai-btn {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+
+            .action-form {
+                align-items: stretch;
+            }
+
+            .action-form select,
+            .action-form button {
+                width: 100%;
+            }
+
+            .actions .link-btn {
+                text-align: center;
+                width: 100%;
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+
+<!-- =========================
+     NAVBAR
+     ========================= -->
+
+<div class="navbar">
+
+    <h2>AI Bug Tracker</h2>
+
+    <div class="nav-links">
+
+        <a href="/dashboard">Dashboard</a>
+
+        <a href="/projects">Projects</a>
+
+        <a href="/bugs">Bugs</a>
+
+        <a href="/bugs/new">Report Bug</a>
+
+        <form th:action="@{/logout}"
+              method="post"
+              style="display:inline;">
+
+            <input type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}">
+
+            <button type="submit"
+                    class="logout-btn">
+                Logout
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<div class="container">
+
+
+    <!-- =========================
+         BUG HEADER
+         ========================= -->
+
+    <div class="header-card">
+
+        <h1 th:text="${bug.title}">
+            Bug Title
+        </h1>
+
+        <p class="bug-id">
+
+            Bug ID:
+
+            <strong th:text="${bug.id}">
+                0
+            </strong>
+
+        </p>
+
+    </div>
+
+
+    <!-- =========================
+         COMMENTS
+         ========================= -->
+
+    <div class="comments-section">
+
+        <h2>💬 Comments</h2>
+
+        <p class="ai-subtitle">
+            Discussion and collaboration on this bug
+        </p>
+
+
+        <!-- Add Comment -->
+
+        <form th:action="@{/bugs/{id}/comments(id=${bug.id})}"
+              method="post"
+              class="comment-form">
+
+            <input type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}">
+
+            <textarea name="comment"
+                      rows="4"
+                      placeholder="Write your comment..."
+                      required></textarea>
+
+            <button type="submit">
+                💬 Add Comment
+            </button>
+
+        </form>
+
+
+        <!-- Existing Comments -->
+
+        <div class="comments-list">
+
+            <div th:if="${#lists.isEmpty(comments)}"
+                 class="no-comments">
+
+                No comments yet.
+
+            </div>
+
+
+            <div th:each="comment : ${comments}"
+                 class="comment">
+
+                <!-- Delete Comment -->
+
+                <div th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')
+                     or comment.user.email == #authentication.name}">
+
+                    <form th:action="@{/bugs/{bugId}/comments/delete/{commentId}
+                             (bugId=${bug.id}, commentId=${comment.id})}"
+                          method="post">
+
+                        <input type="hidden"
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}">
+
+                        <button type="submit"
+                                class="delete-comment-btn">
+                            Delete
+                        </button>
+
+                    </form>
+
+                </div>
+
+
+                <div class="comment-header">
+
+                    <strong th:text="${comment.user.name}">
+                        User
+                    </strong>
+
+                    <span th:text="${#temporals.format(
+                        comment.createdAt,
+                        'dd MMM yyyy, HH:mm'
+                    )}">
+                        Date
+                    </span>
+
+                </div>
+
+
+                <p th:text="${comment.comment}">
+                    Comment
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         AI BUG ANALYSIS
+         ========================= -->
+
+    <div class="section ai-section">
+
+        <h2>🤖 AI Bug Analysis</h2>
+
+        <p class="ai-subtitle">
+            Automated analysis of the reported bug.
+        </p>
+
+
+        <button type="button"
+                class="btn ai-btn"
+                onclick="analyzeBug()">
+
+            Analyze Bug with AI
+
+        </button>
+        <button type="button"
+                class="btn duplicate-ai-btn"
+                onclick="checkDuplicateBug()">
+
+            🔍 Check Duplicate Bug
+
+        </button>
+        <button type="button"
+                class="btn root-cause-btn"
+                onclick="analyzeRootCause()">
+
+            🧠 Analyze Root Cause
+
+        </button>
+        <button type="button"
+                class="btn fix-ai-btn"
+                onclick="suggestFix()">
+            🔧 AI Fix & Debug Guide
+        </button>
+        <button type="button"
+                class="btn developer-ai-btn"
+                onclick="recommendDeveloper()">
+            👨‍💻 Recommend Developer
+        </button>
+        <div id="aiLoading"
+             class="ai-loading">
+
+            🔄 Analyzing bug... Please wait.
+
+        </div>
+
+
+        <div id="aiResult"
+             class="ai-result">
+
+            <div class="ai-grid">
+
+                <div class="ai-card">
+
+                    <strong>Category</strong>
+
+                    <span id="aiCategory">
+                        -
+                    </span>
+
+                </div>
+
+
+                <div class="ai-card">
+
+                    <strong>Severity</strong>
+
+                    <span id="aiSeverity">
+                        -
+                    </span>
+
+                </div>
+
+
+                <div class="ai-card">
+
+                    <strong>Priority</strong>
+
+                    <span id="aiPriority">
+                        -
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="ai-fix">
+
+                <strong>💡 Suggested Fix</strong>
+
+                <span id="aiFix">
+                    -
+                </span>
+
+            </div>
+
+        </div>
+        <div id="duplicateLoading"
+             class="duplicate-loading">
+
+            🔍 Checking existing bugs for possible duplicates...
+
+        </div>
+
+
+        <div id="duplicateResult"
+             class="duplicate-result">
+
+            <div class="duplicate-header">
+
+                <h3>🔍 AI Duplicate Bug Detection</h3>
+
+                <p>
+                    AI compared this bug with existing reported issues.
+                </p>
+
+            </div>
+
+
+            <div class="duplicate-content">
+
+                <div id="duplicateStatus"
+                     class="duplicate-status">
+
+                    Possible Duplicate Found
+
+                </div>
+
+
+                <div class="duplicate-grid">
+
+                    <div class="duplicate-card">
+
+                        <strong>Existing Bug</strong>
+
+                        <span id="duplicateBugId">
+                    -
+                </span>
+
+                    </div>
+
+
+                    <div class="duplicate-card">
+
+                        <strong>Bug Title</strong>
+
+                        <span id="duplicateBugTitle">
+                    -
+                </span>
+
+                    </div>
+
+
+                    <div class="duplicate-card">
+
+                        <strong>Similarity</strong>
+
+                        <span id="duplicateSimilarity"
+                              class="similarity">
+
+                    -
+
+                </span>
+
+                    </div>
+
+                </div>
+
+
+                <div class="duplicate-recommendation">
+
+                    <strong>
+                        💡 AI Recommendation
+                    </strong>
+
+                    <span id="duplicateRecommendation">
+
+                Review the existing bug before creating
+                another issue.
+
+            </span>
+
+                </div>
+
+            </div>
+
+        </div>
+        <div id="rootCauseLoading"
+             class="root-cause-loading">
+
+            🧠 Analyzing possible root cause...
+
+        </div>
+
+
+        <div id="rootCauseResult"
+             class="root-cause-result">
+
+            <div class="root-cause-header">
+
+                <h3>🧠 AI Root-Cause Analysis</h3>
+
+                <p>
+                    AI identified the most likely cause based on the reported bug.
+                </p>
+
+            </div>
+
+
+            <div class="root-cause-content">
+
+                <div class="root-cause-card">
+
+                    <strong>Likely Root Cause</strong>
+
+                    <span id="rootCause">
+                -
+            </span>
+
+                </div>
+
+
+                <div class="root-cause-card">
+
+                    <strong>Analysis</strong>
+
+                    <span id="rootCauseAnalysis">
+                -
+            </span>
+
+                </div>
+
+
+                <div class="root-cause-recommendation">
+
+                    <strong>
+                        💡 Recommendation
+                    </strong>
+
+                    <span id="rootCauseRecommendation">
+                -
+            </span>
+
+                </div>
+            </div>
+
+            </div>
+            <div id="fixLoading" class="fix-loading">
+                🔧 AI is preparing a debugging guide...
+            </div>
+
+            <div id="fixResult" class="fix-result">
+
+                <div class="fix-header">
+                    <h3>🔧 AI Fix Suggestion & Debugging Guide</h3>
+                    <p>AI-generated guidance for investigating and fixing this bug.</p>
+                </div>
+
+                <div class="fix-content">
+
+                    <div class="fix-card">
+                        <strong>Suggested Fix</strong>
+                        <span id="suggestedFix">-</span>
+                    </div>
+
+                    <div class="fix-card">
+                        <strong>Debugging Steps</strong>
+                        <span id="debuggingSteps">-</span>
+                    </div>
+
+                    <div class="fix-card">
+                        <strong>Components to Inspect</strong>
+                        <span id="fixComponents">-</span>
+                    </div>
+
+                    <div class="fix-risk">
+                        <strong>⚠ Potential Risk: </strong>
+                        <span id="fixRisk">-</span>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    <!-- =========================
+     AI DEVELOPER RECOMMENDATION
+     ========================= -->
+
+    <div id="developerLoading"
+         class="developer-loading">
+
+        🤖 AI is finding the most suitable developer...
+
+    </div>
+
+
+    <div id="developerResult"
+         class="developer-result">
+
+        <div class="developer-header">
+
+            <h3>👨‍💻 AI Developer Recommendation</h3>
+
+            <p>
+                AI recommends a suitable developer based on the reported bug.
+            </p>
+
+        </div>
+
+
+        <div class="developer-content">
+
+            <div class="developer-card">
+
+                <strong>
+                    Recommended Developer
+                </strong>
+
+                <span id="recommendedDeveloper">
+                -
+            </span>
+
+            </div>
+
+
+            <div class="developer-card">
+
+                <strong>
+                    Developer Email
+                </strong>
+
+                <span id="developerEmail">
+                -
+            </span>
+
+            </div>
+
+
+            <div class="developer-recommendation">
+
+                <strong>
+                    💡 Why this developer?
+                </strong>
+
+                <span id="developerReason">
+                -
+            </span>
+
+            </div>
+
+
+            <div class="developer-recommendation">
+
+                <strong>
+                    ✓ Recommendation
+                </strong>
+
+                <span>
+                Project Manager should review the AI suggestion
+                before assigning the bug.
+            </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- =========================
+         BUG INFORMATION
+         ========================= -->
+
+    <div class="section">
+
+        <h2>Bug Information</h2>
+
+        <br>
+
+        <div class="details-grid">
+
+
+            <div class="detail">
+
+                <strong>Description</strong>
+
+                <span th:text="${bug.description}">
+                </span>
+
+            </div>
+
+
+            <div class="detail">
+
+                <strong>Project</strong>
+
+                <span th:text="${bug.project.name}">
+                </span>
+
+            </div>
+
+
+            <div class="detail">
+
+                <strong>Reported By</strong>
+
+                <span th:text="${bug.reportedBy.name}">
+                </span>
+
+            </div>
+
+
+            <div class="detail">
+
+                <strong>Assigned To</strong>
+
+                <span th:if="${bug.assignedTo != null}"
+                      th:text="${bug.assignedTo.name}">
+                </span>
+
+                <span th:if="${bug.assignedTo == null}">
+                    Not Assigned
+                </span>
+
+            </div>
+
+
+            <div class="detail">
+
+                <strong>Priority</strong>
+
+                <span th:text="${bug.priority}">
+                </span>
+
+            </div>
+
+
+            <div class="detail">
+
+                <strong>Severity</strong>
+
+                <span th:text="${bug.severity}">
+                </span>
+
+            </div>
+
+
+            <div class="detail">
+
+                <strong>Status</strong>
+
+                <span th:text="${bug.status}">
+                </span>
+
+            </div>
+
+
+            <div class="detail">
+
+                <strong>Category</strong>
+
+                <span th:text="${bug.category}">
+                </span>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================
+         ASSIGN BUG
+         ========================= -->
+
+    <div class="section">
+
+        <h2>Assign Bug</h2>
+
+        <br>
+
+        <form th:action="@{/bugs/{id}/assign(id=${bug.id})}"
+              method="post"
+              class="action-form">
+
+            <input type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}">
+
+
+            <select name="userId"
+                    required>
+
+                <option value="">
+                    Select User
+                </option>
+
+                <option th:each="user : ${users}"
+                        th:value="${user.id}"
+                        th:text="${user.name}">
+                </option>
+
+            </select>
+
+
+            <button type="submit"
+                    class="btn">
+
+                Assign Bug
+
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- =========================
+         UPDATE STATUS
+         ========================= -->
+
+    <div class="section">
+
+        <h2>Update Status</h2>
+
+        <br>
+
+        <form th:action="@{/bugs/{id}/status(id=${bug.id})}"
+              method="post"
+              class="action-form">
+
+            <input type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}">
+
+
+            <select name="status"
+                    required>
+
+                <option th:each="status : ${statuses}"
+                        th:value="${status}"
+                        th:text="${status}"
+                        th:selected="${status == bug.status}">
+                </option>
+
+            </select>
+
+
+            <button type="submit"
+                    class="btn">
+
+                Update Status
+
+            </button>
+
+        </form>
+
+    </div>
+
+
+    <!-- =========================
+         STEPS TO REPRODUCE
+         ========================= -->
+
+    <div class="section">
+
+        <h2>Steps to Reproduce</h2>
+
+        <br>
+
+        <div class="text-section"
+             th:text="${bug.stepsToReproduce}">
+        </div>
+
+    </div>
+
+
+    <!-- EXPECTED RESULT -->
+
+    <div class="section">
+
+        <h2>Expected Result</h2>
+
+        <br>
+
+        <div class="text-section"
+             th:text="${bug.expectedResult}">
+        </div>
+
+    </div>
+
+
+    <!-- ACTUAL RESULT -->
+
+    <div class="section">
+
+        <h2>Actual Result</h2>
+
+        <br>
+
+        <div class="text-section"
+             th:text="${bug.actualResult}">
+        </div>
+
+    </div>
+
+    <!-- =========================
+         TIMELINE
+         ========================= -->
+
+    <div class="section">
+
+        <h2>🕒 Timeline</h2>
+
+        <p class="ai-subtitle">
+            Bug activity and tracking history
+        </p>
+
+        <div class="timeline">
+
+            <div class="timeline-item">
+
+                <div class="timeline-dot"></div>
+
+                <div class="timeline-content">
+
+                    <strong>Bug Created</strong>
+
+                    <span th:text="${bug.createdAt}">
+                    Date
+                </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="timeline-item">
+
+                <div class="timeline-dot"></div>
+
+                <div class="timeline-content">
+
+                    <strong>Last Updated</strong>
+
+                    <span th:text="${bug.updatedAt}">
+                    Date
+                </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- =========================
+         ACTIONS
+         ========================= -->
+
+    <div class="section">
+
+        <div class="actions">
+
+            <a th:href="@{/bugs/{id}/edit(id=${bug.id})}"
+               class="link-btn">
+
+                Edit Bug
+
+            </a>
+
+
+            <a href="/bugs"
+               class="link-btn back-btn">
+
+                ← Back to Bugs
+
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     AI JAVASCRIPT
+     ========================= -->
+
+<script>
+
+    function analyzeBug() {
+
+        const aiResult =
+            document.getElementById("aiResult");
+
+        const aiLoading =
+            document.getElementById("aiLoading");
+
+
+        aiResult.style.display = "none";
+
+        aiLoading.style.display = "block";
+
+
+        fetch("/bugs/[[${bug.id}]]/ai-analysis")
+
+            .then(response => {
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        "AI analysis failed"
+                    );
+
+                }
+
+                return response.text();
+
+            })
+
+
+            .then(data => {
+
+                aiLoading.style.display = "none";
+
+
+                const lines =
+                    data.split(/\r?\n/);
+
+
+                let category = "-";
+                let severity = "-";
+                let priority = "-";
+                let fix = "-";
+
+                let fixIndex = -1;
+
+
+                lines.forEach((line, index) => {
+
+                    const trimmed =
+                        line.trim();
+
+
+                    if (trimmed.startsWith("Category:")) {
+
+                        category =
+                            trimmed
+                                .replace("Category:", "")
+                                .trim();
+
+                    }
+
+
+                    else if (trimmed.startsWith("Severity:")) {
+
+                        severity =
+                            trimmed
+                                .replace("Severity:", "")
+                                .trim();
+
+                    }
+
+
+                    else if (trimmed.startsWith("Priority:")) {
+
+                        priority =
+                            trimmed
+                                .replace("Priority:", "")
+                                .trim();
+
+                    }
+
+
+                    else if (trimmed.startsWith("Suggested Fix:")) {
+
+                        fixIndex = index;
+
+
+                        const inlineFix =
+                            trimmed
+                                .replace("Suggested Fix:", "")
+                                .trim();
+
+
+                        if (inlineFix) {
+
+                            fix = inlineFix;
+
+                        }
+
+                    }
+
+                });
+
+
+                /*
+                 * If Suggested Fix is on the next line,
+                 * read the remaining text after
+                 * "Suggested Fix:"
+                 */
+
+                if (fixIndex !== -1 && fix === "-") {
+
+                    const multilineFix =
+                        lines
+                            .slice(fixIndex + 1)
+                            .map(line => line.trim())
+                            .filter(line => line.length > 0)
+                            .join(" ");
+
+
+                    if (multilineFix) {
+
+                        fix = multilineFix;
+
+                    }
+
+                }
+
+
+                document.getElementById("aiCategory")
+                    .textContent = category;
+
+
+                document.getElementById("aiSeverity")
+                    .textContent = severity;
+
+
+                document.getElementById("aiPriority")
+                    .textContent = priority;
+
+
+                document.getElementById("aiFix")
+                    .textContent = fix;
+
+
+                aiResult.style.display = "block";
+
+            })
+
+
+            .catch(error => {
+
+                aiLoading.style.display = "none";
+
+
+                document.getElementById("aiCategory")
+                    .textContent = "-";
+
+                document.getElementById("aiSeverity")
+                    .textContent = "-";
+
+                document.getElementById("aiPriority")
+                    .textContent = "-";
+
+
+                document.getElementById("aiFix")
+                    .textContent =
+                    "Unable to analyze the bug. Please try again.";
+
+
+                aiResult.style.display = "block";
+
+
+                console.error(error);
+
+            });
+
+    }
+    function checkDuplicateBug() {
+
+        const loading =
+            document.getElementById("duplicateLoading");
+
+        const result =
+            document.getElementById("duplicateResult");
+
+        const status =
+            document.getElementById("duplicateStatus");
+
+        const bugId =
+            document.getElementById("duplicateBugId");
+
+        const bugTitle =
+            document.getElementById("duplicateBugTitle");
+
+        const similarity =
+            document.getElementById("duplicateSimilarity");
+
+        const recommendation =
+            document.getElementById("duplicateRecommendation");
+
+
+        result.style.display = "none";
+        loading.style.display = "block";
+
+
+        fetch("/bugs/[[${bug.id}]]/duplicate-check")
+
+            .then(response => {
+
+                if (!response.ok) {
+                    throw new Error("Duplicate check failed");
+                }
+
+                return response.text();
+
+            })
+
+            .then(data => {
+
+                console.log("Duplicate AI Response:");
+                console.log(data);
+
+                loading.style.display = "none";
+
+
+                const possibleDuplicate =
+                    data.includes("Possible Duplicate Found");
+
+
+                const bugIdMatch =
+                    data.match(/Existing Bug ID:\s*([0-9]+)/i);
+
+                const titleMatch =
+                    data.match(/Existing Bug Title:\s*([^\r\n]+)/i);
+
+                const similarityMatch =
+                    data.match(/Similarity:\s*([0-9]+)%/i);
+
+
+                if (possibleDuplicate) {
+
+                    status.textContent =
+                        "⚠ Possible Duplicate Found";
+
+                    status.style.background = "#fff7ed";
+                    status.style.color = "#c2410c";
+
+
+                    bugId.textContent =
+                        bugIdMatch
+                            ? "#" + bugIdMatch[1]
+                            : "N/A";
+
+
+                    bugTitle.textContent =
+                        titleMatch
+                            ? titleMatch[1].trim()
+                            : "N/A";
+
+
+                    similarity.textContent =
+                        similarityMatch
+                            ? similarityMatch[1] + "%"
+                            : "N/A";
+
+
+                    recommendation.textContent =
+                        "Review the existing bug before creating another issue to avoid duplicate tracking.";
+
+                } else {
+
+                    status.textContent =
+                        "✓ No Strong Duplicate Found";
+
+                    status.style.background = "#ecfdf5";
+                    status.style.color = "#047857";
+
+
+                    bugId.textContent =
+                        "None";
+
+
+                    bugTitle.textContent =
+                        "No similar bug found";
+
+
+                    similarity.textContent =
+                        similarityMatch
+                            ? similarityMatch[1] + "%"
+                            : "0%";
+
+
+                    recommendation.textContent =
+                        "This bug appears sufficiently different from existing issues.";
+
+                }
+
+
+                result.style.display = "block";
+
+            })
+
+            .catch(error => {
+
+                console.error(
+                    "Duplicate Detection Error:",
+                    error
+                );
+
+
+                loading.style.display = "none";
+
+
+                status.textContent =
+                    "✕ Duplicate Check Failed";
+
+                status.style.background = "#fef2f2";
+                status.style.color = "#b91c1c";
+
+
+                bugId.textContent = "-";
+
+                bugTitle.textContent = "-";
+
+                similarity.textContent = "-";
+
+
+                recommendation.textContent =
+                    "Unable to complete duplicate detection. Please try again.";
+
+
+                result.style.display = "block";
+
+            });
+    }
+    function analyzeRootCause() {
+
+        const loading =
+            document.getElementById("rootCauseLoading");
+
+        const result =
+            document.getElementById("rootCauseResult");
+
+
+        result.style.display = "none";
+        loading.style.display = "block";
+
+
+        fetch("/bugs/[[${bug.id}]]/root-cause")
+
+            .then(response => {
+
+                if (!response.ok) {
+                    throw new Error("Root cause analysis failed");
+                }
+
+                return response.text();
+
+            })
+
+            .then(data => {
+
+                console.log("Root Cause AI Response:");
+                console.log(data);
+
+                loading.style.display = "none";
+
+
+                const rootCauseMatch =
+                    data.match(/Likely Root Cause:\s*([^\r\n]+)/i);
+
+                const analysisMatch =
+                    data.match(/Analysis:\s*([\s\S]*?)(?=\nRecommendation:)/i);
+
+                const recommendationMatch =
+                    data.match(/Recommendation:\s*([\s\S]*)/i);
+
+
+                document.getElementById("rootCause")
+                    .textContent =
+                    rootCauseMatch
+                        ? rootCauseMatch[1].trim()
+                        : "Unable to determine";
+
+
+                document.getElementById("rootCauseAnalysis")
+                    .textContent =
+                    analysisMatch
+                        ? analysisMatch[1].trim()
+                        : "No detailed analysis available";
+
+
+                document.getElementById("rootCauseRecommendation")
+                    .textContent =
+                    recommendationMatch
+                        ? recommendationMatch[1].trim()
+                        : "Review the affected code path and reproduce the issue.";
+
+
+                result.style.display = "block";
+
+            })
+
+            .catch(error => {
+
+                console.error(
+                    "Root Cause Analysis Error:",
+                    error
+                );
+
+
+                loading.style.display = "none";
+
+
+                document.getElementById("rootCause")
+                    .textContent = "-";
+
+
+                document.getElementById("rootCauseAnalysis")
+                    .textContent =
+                    "Unable to analyze the root cause.";
+
+
+                document.getElementById("rootCauseRecommendation")
+                    .textContent =
+                    "Please try again.";
+
+
+                result.style.display = "block";
+
+            });
+    }
+    function recommendDeveloper() {
+
+        const loading =
+            document.getElementById("developerLoading");
+
+        const result =
+            document.getElementById("developerResult");
+
+
+        result.style.display = "none";
+        loading.style.display = "block";
+
+
+        fetch("/bugs/[[${bug.id}]]/developer-recommendation")
+
+            .then(response => {
+
+                if (!response.ok) {
+                    throw new Error(
+                        "Developer recommendation failed"
+                    );
+                }
+
+                return response.text();
+
+            })
+
+
+            .then(data => {
+
+                console.log(
+                    "AI Developer Recommendation:"
+                );
+
+                console.log(data);
+
+
+                loading.style.display = "none";
+
+
+                const developerMatch =
+                    data.match(
+                        /Recommended Developer:\s*([^\r\n]+)/i
+                    );
+
+
+                const emailMatch =
+                    data.match(
+                        /Developer Email:\s*([^\r\n]+)/i
+                    );
+
+
+                const reasonMatch =
+                    data.match(
+                        /Reason:\s*([\s\S]*?)(?=\n\nRecommendation:)/i
+                    );
+
+
+                document.getElementById(
+                    "recommendedDeveloper"
+                ).textContent =
+
+                    developerMatch
+                        ? developerMatch[1].trim()
+                        : "No developer available";
+
+
+                document.getElementById(
+                    "developerEmail"
+                ).textContent =
+
+                    emailMatch
+                        ? emailMatch[1].trim()
+                        : "-";
+
+
+                document.getElementById(
+                    "developerReason"
+                ).textContent =
+
+                    reasonMatch
+                        ? reasonMatch[1].trim()
+                        : "No reason available";
+
+
+                result.style.display = "block";
+
+            })
+
+
+            .catch(error => {
+
+                console.error(
+                    "Developer Recommendation Error:",
+                    error
+                );
+
+
+                loading.style.display = "none";
+
+
+                document.getElementById(
+                    "recommendedDeveloper"
+                ).textContent =
+                    "Unable to recommend developer";
+
+
+                document.getElementById(
+                    "developerEmail"
+                ).textContent = "-";
+
+
+                document.getElementById(
+                    "developerReason"
+                ).textContent =
+                    "Something went wrong while generating the recommendation.";
+
+
+                result.style.display = "block";
+
+            });
+
+    }
+    function suggestFix() {
+
+        const loading = document.getElementById("fixLoading");
+        const result = document.getElementById("fixResult");
+
+        result.style.display = "none";
+        loading.style.display = "block";
+
+        fetch("/bugs/[[${bug.id}]]/fix-suggestion")
+            .then(response => {
+
+                if (!response.ok) {
+                    throw new Error("Fix suggestion failed");
+                }
+
+                return response.text();
+            })
+            .then(data => {
+
+                console.log("AI Fix Suggestion:");
+                console.log(data);
+
+                loading.style.display = "none";
+
+                const fixMatch =
+                    data.match(/Suggested Fix:\s*([\s\S]*?)(?=\n\nDebugging Steps:)/i);
+
+                const stepsMatch =
+                    data.match(/Debugging Steps:\s*([\s\S]*?)(?=\n\nComponents to Inspect:)/i);
+
+                const componentsMatch =
+                    data.match(/Components to Inspect:\s*([\s\S]*?)(?=\n\nPotential Risk:)/i);
+
+                const riskMatch =
+                    data.match(/Potential Risk:\s*([^\r\n]+)/i);
+
+                document.getElementById("suggestedFix").textContent =
+                    fixMatch
+                        ? fixMatch[1].trim()
+                        : "No fix suggestion available";
+
+                document.getElementById("debuggingSteps").textContent =
+                    stepsMatch
+                        ? stepsMatch[1].trim()
+                        : "No debugging steps available";
+
+                document.getElementById("fixComponents").textContent =
+                    componentsMatch
+                        ? componentsMatch[1].trim()
+                        : "No components identified";
+
+                document.getElementById("fixRisk").textContent =
+                    riskMatch
+                        ? riskMatch[1].trim()
+                        : "MEDIUM";
+
+                result.style.display = "block";
+            })
+            .catch(error => {
+
+                console.error("AI Fix Suggestion Error:", error);
+
+                loading.style.display = "none";
+
+                document.getElementById("suggestedFix").textContent = "-";
+
+                document.getElementById("debuggingSteps").textContent =
+                    "Unable to generate debugging steps.";
+
+                document.getElementById("fixComponents").textContent = "-";
+
+                document.getElementById("fixRisk").textContent = "-";
+
+                result.style.display = "block";
+            });
+    }
+
+</script>
+
+</body>
+
+</html>

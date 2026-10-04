@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${project.name} + ' - Project Details'">
+        Project Details
+    </title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 30px;
+            color: #1f2937;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+        }
+
+        h1 {
+            margin-bottom: 5px;
+        }
+
+        h2 {
+            margin-top: 0;
+        }
+
+        .project-meta {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 14px;
+        }
+
+        .meta-item {
+            background: #f8fafc;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .meta-item strong {
+            display: block;
+            font-size: 13px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        th {
+            background: #f8fafc;
+            font-size: 13px;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            background: #eef2ff;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .btn {
+            border: none;
+            padding: 9px 14px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background: #111827;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        select {
+            padding: 9px;
+            border: 1px solid #d1d5db;
+            border-radius: 7px;
+            min-width: 180px;
+        }
+
+        .team-form {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .empty {
+            color: #6b7280;
+            padding: 15px 0;
+        }
+
+        .links {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 15px;
+            }
+
+            .project-meta {
+                grid-template-columns: 1fr;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+
+        /* ================= VIBRANT PROJECT DETAILS THEME ================= */
+
+        /* Page background */
+        body {
+            background: linear-gradient(
+                    135deg,
+                    #dff7ff 0%,
+                    #fce7f3 35%,
+                    #ede9fe 65%,
+                    #dbeafe 100%
+            );
+            background-attachment: fixed;
+            color: #172554;
+        }
+
+        /* Main heading */
+        h1 {
+            color: #312e81;
+            font-size: 30px;
+            font-weight: 800;
+        }
+
+        h2 {
+            color: #312e81;
+            font-weight: 700;
+        }
+
+        /* Description text */
+        .container > p {
+            color: #64748b;
+            line-height: 1.7;
+        }
+
+        /* Main cards */
+        .card {
+            background: rgba(255, 255, 255, 0.93);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 18px;
+            padding: 26px;
+            box-shadow: 0 8px 24px rgba(51, 65, 85, 0.09);
+            backdrop-filter: blur(10px);
+        }
+
+        /* Project information boxes */
+        .meta-item {
+            background: linear-gradient(135deg, #f0f4ff, #f5f0ff);
+            border: 1px solid #e5e7f5;
+            border-radius: 11px;
+            padding: 15px;
+            transition: transform 0.2s ease;
+        }
+
+        .meta-item:hover {
+            transform: translateY(-2px);
+        }
+
+        .meta-item strong {
+            color: #6d28d9;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        .meta-item span {
+            color: #334155;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+
+        /* Links */
+        a {
+            color: #6d28d9;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        a:hover {
+            color: #4338ca;
+            text-decoration: underline;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 10px;
+            overflow: hidden;
+            background: white;
+        }
+
+        th {
+            background: linear-gradient(135deg, #312e81, #6d28d9);
+            color: white;
+            padding: 14px 12px;
+            font-size: 13px;
+            border: none;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 13px 12px;
+            border-bottom: 1px solid #e9e7f5;
+            color: #334155;
+            font-size: 13px;
+        }
+
+        tbody tr:hover {
+            background: #f0f4ff;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Team role badge */
+        .role-badge {
+            background: #ede9fe;
+            color: #6d28d9;
+            border: 1px solid #ddd6fe;
+            border-radius: 8px;
+            padding: 6px 11px;
+            font-weight: 700;
+        }
+
+        /* Buttons */
+        .btn {
+            border: none;
+            padding: 10px 16px;
+            border-radius: 9px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.25s ease;
+        }
+
+        /* Add Member button */
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: white;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1d4ed8, #6d28d9);
+            transform: translateY(-2px);
+        }
+
+        /* Remove button */
+        .btn-danger {
+            background: linear-gradient(135deg, #ffe4e6, #fecdd3);
+            color: #be123c;
+            border: 1px solid #fecdd3;
+        }
+
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #fecdd3, #fda4af);
+            transform: translateY(-2px);
+        }
+
+        /* Form fields */
+        select {
+            padding: 11px 13px;
+            border: 1px solid #d8d9ef;
+            border-radius: 9px;
+            background: #fafaff;
+            color: #334155;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        select:focus {
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.12);
+        }
+
+        /* Team form */
+        .team-form {
+            gap: 12px;
+            margin: 22px 0;
+        }
+
+        .team-form select {
+            flex: 1;
+        }
+
+        /* Empty messages */
+        .empty {
+            background: #f0f4ff;
+            color: #64748b;
+            border-radius: 10px;
+            padding: 18px;
+            margin: 15px 0;
+        }
+
+        /* Section separators */
+        hr {
+            border: none;
+            height: 1px;
+            background: linear-gradient(
+                    to right,
+                    transparent,
+                    #c4b5fd,
+                    transparent
+            );
+            margin: 30px 0;
+        }
+
+        /* External testing section */
+        .container > h2 {
+            margin-top: 25px;
+        }
+
+        /* Connectivity test button */
+        .container > form button {
+            background: linear-gradient(135deg, #0d9488, #10b981);
+            color: white;
+            border: none;
+            padding: 11px 17px;
+            border-radius: 9px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .container > form button:hover {
+            background: linear-gradient(135deg, #0f766e, #059669);
+            transform: translateY(-2px);
+        }
+
+        /* Test result */
+        .container > p strong {
+            color: #312e81;
+        }
+
+        /* Responsive layout */
+        @media (max-width: 700px) {
+            body {
+                padding: 15px;
+            }
+
+            .card {
+                padding: 18px;
+            }
+
+            .project-meta {
+                grid-template-columns: 1fr;
+            }
+
+            .team-form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .team-form select {
+                width: 100%;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+
+            h1 {
+                font-size: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Project Details</h1>
+
+    <p>
+        Manage project information, team members and project bugs.
+    </p>
+
+    <div class="card">
+
+        <h2 th:text="${project.name}">
+            Project Name
+        </h2>
+
+        <div class="project-meta">
+
+            <div class="meta-item">
+                <strong>Project ID</strong>
+                <span th:text="${project.id}"></span>
+            </div>
+
+            <div class="meta-item">
+                <strong>Project Type</strong>
+                <span th:text="${project.projectType}"></span>
+            </div>
+
+            <div class="meta-item">
+                <strong>Description</strong>
+                <span th:text="${project.description}"></span>
+            </div>
+
+            <div class="meta-item">
+                <strong>Status</strong>
+                <span th:text="${project.status}"></span>
+            </div>
+
+            <div class="meta-item">
+                <strong>Start Date</strong>
+                <span th:text="${project.startDate}"></span>
+            </div>
+
+            <div class="meta-item">
+                <strong>End Date</strong>
+                <span th:text="${project.endDate}"></span>
+            </div>
+
+        </div>
+<p>
+    <strong>Project URL:</strong>
+
+    <a th:if="${project.projectUrl != null
+               and !project.projectUrl.isEmpty()}"
+       th:href="${project.projectUrl}"
+       th:text="${project.projectUrl}"
+       target="_blank">
+    </a>
+
+    <span th:if="${project.projectUrl == null
+                  or project.projectUrl.isEmpty()}">
+        No external URL
+    </span>
+</p>
+</div>
+    <div class="card">
+
+        <h2>Team Members</h2>
+
+        <p>
+            Manage users assigned to this project and their project-specific roles.
+        </p>
+
+        <form th:action="@{/projects/{id}/members(id=${project.id})}"
+              method="post"
+              class="team-form">
+
+            <input type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}">
+
+            <select name="userId" required>
+                <option value="">Select User</option>
+
+                <option th:each="user : ${users}"
+                        th:value="${user.id}"
+                        th:text="${user.name + ' (' + user.email + ')'}">
+                </option>
+            </select>
+
+            <select name="memberRole" required>
+                <option value="">Select Project Role</option>
+
+                <option th:each="role : ${memberRoles}"
+                        th:value="${role}"
+                        th:text="${role}">
+                </option>
+            </select>
+
+            <button type="submit" class="btn btn-primary">
+                + Add Member
+            </button>
+
+        </form>
+
+        <div th:if="${members == null or #lists.isEmpty(members)}"
+             class="empty">
+            No team members assigned to this project yet.
+        </div>
+
+        <table th:if="${members != null and !#lists.isEmpty(members)}">
+
+            <thead>
+            <tr>
+                <th>User ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Project Role</th>
+                <th>Joined At</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            <tr th:each="member : ${members}">
+
+                <td th:text="${member.user.id}"></td>
+
+                <td th:text="${member.user.name}"></td>
+
+                <td th:text="${member.user.email}"></td>
+
+                <td>
+                <span class="role-badge"
+                      th:text="${member.memberRole}">
+                    ROLE
+                </span>
+                </td>
+
+                <td th:text="${member.joinedAt}"></td>
+
+                <td>
+                    <form th:action="@{/projects/{id}/members/remove(id=${project.id})}"
+                          method="post">
+
+                        <input type="hidden"
+                               th:name="${_csrf.parameterName}"
+                               th:value="${_csrf.token}">
+
+                        <input type="hidden"
+                               name="memberId"
+                               th:value="${member.id}">
+
+                        <button type="submit"
+                                class="btn btn-danger"
+                                onclick="return confirm('Remove this member from the project?');">
+                            Remove
+                        </button>
+
+                    </form>
+                </td>
+
+            </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+<hr>
+
+<a th:href="@{/projects/edit/{id}(id=${project.id})}">
+    Edit Project
+</a>
+
+<br><br>
+<hr>
+<hr>
+
+<h2>External Project Testing</h2>
+
+<form th:if="${project.projectType.name() == 'EXTERNAL'}"
+      th:action="@{/projects/{id}/test-connectivity(id=${project.id})}"
+      method="post">
+
+    <input type="hidden"
+           th:name="${_csrf.parameterName}"
+           th:value="${_csrf.token}">
+
+    <button type="submit">
+        Run Connectivity Test
+    </button>
+
+</form>
+
+<p th:if="${project.projectType.name() != 'EXTERNAL'}">
+    Connectivity testing is available for external projects only.
+</p>
+
+<p th:if="${testResult != null}">
+    <strong>Test Result:</strong>
+    <span th:text="${testResult}"></span>
+</p>
+
+<hr>
+
+<h2>Bugs in This Project</h2>
+
+<div th:if="${bugs == null or #lists.isEmpty(bugs)}">
+    <p>No bugs reported for this project yet.</p>
+</div>
+
+<table border="1" cellpadding="10"
+       th:if="${bugs != null and !#lists.isEmpty(bugs)}">
+
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Title</th>
+        <th>Status</th>
+        <th>Priority</th>
+        <th>Severity</th>
+        <th>Category</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+
+    <tbody>
+
+    <tr th:each="bug : ${bugs}">
+
+        <td th:text="${bug.id}"></td>
+
+        <td th:text="${bug.title}"></td>
+
+        <td th:text="${bug.status}"></td>
+
+        <td th:text="${bug.priority}"></td>
+
+        <td th:text="${bug.severity}"></td>
+
+        <td th:text="${bug.category}"></td>
+
+        <td>
+            <a th:href="@{/bugs/{id}(id=${bug.id})}">
+                View Bug
+            </a>
+        </td>
+
+    </tr>
+
+    </tbody>
+
+</table>
+
+<br>
+
+<a th:href="@{/bugs/new}">
+    Report New Bug
+</a>
+
+<a href="/projects">
+    ← Back to Projects
+</a>
+
+<br><br>
+
+<a href="/dashboard">
+    Back to Dashboard
+</a>
+</div>
+</body>
+</html>

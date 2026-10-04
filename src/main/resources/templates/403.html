@@ -1,0 +1,81 @@
+<!DOCTYPE html><html lang="en"
+                     xmlns:th="http://www.thymeleaf.org"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0"><title>Access Denied - AI Bug Tracker</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            width: 90%;
+            max-width: 500px;
+            padding: 40px;
+            text-align: center;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .error-code {
+            font-size: 70px;
+            font-weight: bold;
+            color: #dc2626;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            margin-bottom: 15px;
+            color: #1f2937;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            background: #2563eb;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+        }
+    </style>
+
+</head><body><div class="container"><div class="error-code">
+    403
+</div>
+
+    <h1>Access Denied</h1>
+
+    <p>
+        You do not have permission to access this page.
+        Please contact an administrator if you believe this is a mistake.
+    </p>
+
+    <a href="/dashboard" class="btn">
+        Back to Dashboard
+    </a>
+
+</div></body></html>

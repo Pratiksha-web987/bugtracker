@@ -1,0 +1,1016 @@
+<!DOCTYPE html><html lang="en"
+                     xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Bug Tracker</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            color: #222;
+        }
+
+        .navbar {
+            background: #1f2937;
+            color: white;
+            padding: 18px 35px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h2 {
+            margin: 0;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .nav-links a:hover {
+            text-decoration: underline;
+        }
+
+        .logout-btn {
+            border: none;
+            background: #dc2626;
+            color: white;
+            padding: 9px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1400px;
+            margin: 35px auto;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .page-header h1 {
+            margin-bottom: 8px;
+        }
+
+        .page-header p {
+            color: #666;
+        }
+
+        .create-btn {
+            background: #2563eb;
+            color: white;
+            padding: 12px 18px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .create-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .table-container {
+            background: white;
+            padding: 0;
+            border-radius: 12px;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+            overflow-x: auto;
+            border: 1px solid #e5e7eb;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1100px;
+        }
+
+        th {
+            background: #172033;
+            color: #ffffff;
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+        td {
+            padding: 15px 16px;
+            border-bottom: 1px solid #e5e7eb;
+            vertical-align: middle;
+            font-size: 15px;
+            color: #374151;
+        }
+        tbody tr:hover {
+            background: #f8fafc;
+            transition: background 0.15s ease;
+        }
+
+        select {
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            background: white;
+        }
+        .action-btn {
+            border: none;
+            padding: 8px 13px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            background: #2563eb;
+            color: white;
+            transition: all 0.15s ease;
+        }
+
+        .action-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(37, 99, 235, 0.25);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+        }
+        .delete-btn {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: all 0.15s ease;
+        }
+
+        .delete-btn:hover {
+            background: #fecaca;
+            border-color: #fca5a5;
+        }
+        .details-link {
+            color: #2563eb;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .details-link:hover {
+            text-decoration: underline;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 25px;
+            color: #666;
+        }
+
+        .action-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .action-form {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .filter-container {
+            background: white;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+            border: 1px solid #e5e7eb;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+
+        .filter-group label {
+            font-size: 13px;
+            font-weight: bold;
+            color: #374151;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37,99,235,0.1);
+        }
+
+        .clear-filter-btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            background: #6b7280;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .clear-filter-btn:hover {
+            background: #4b5563;
+        }
+
+        @media (max-width: 700px) {
+
+            .navbar {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+        }
+
+        /* =========================
+        BUG STATUS / PRIORITY / SEVERITY BADGES
+         ========================= */
+
+        .badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        /* Status */
+        .status-open {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .status-triaged {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .status-assigned {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-in-progress {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .status-fixed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-retesting {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .status-closed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-reopened {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* Priority */
+        .priority-low {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .priority-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .priority-high {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* Severity */
+        .severity-minor {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .severity-major {
+            background: #ffedd5;
+            color: #c2410c;
+        }
+
+        .severity-critical {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* ===== VIBRANT BUG TRACKER THEME ===== */
+
+        /* 1. Colorful background */
+        body {
+            background: linear-gradient(
+                    135deg,
+                    #dff7ff 0%,
+                    #fce7f3 35%,
+                    #ede9fe 65%,
+                    #dbeafe 100%
+            );
+            background-attachment: fixed;
+            color: #172554;
+        }
+
+        /* 2. Navbar */
+        .navbar {
+            background: linear-gradient(
+                    110deg,
+                    #111b55,
+                    #312e81,
+                    #6d28d9
+            );
+            box-shadow: 0 5px 20px rgba(49, 46, 129, 0.25);
+        }
+
+        .navbar h2 {
+            color: white;
+        }
+
+        .nav-links a {
+            padding: 9px 12px;
+            border-radius: 8px;
+            transition: all 0.25s ease;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.16);
+            text-decoration: none;
+        }
+
+        /* 3. Main heading */
+        .page-header h1 {
+            color: #312e81;
+        }
+
+        .page-header p {
+            color: #475569;
+        }
+
+        /* 4. Report New Bug button */
+        .create-btn {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            border-radius: 10px;
+            box-shadow: 0 5px 14px rgba(99, 102, 241, 0.22);
+            transition: all 0.25s ease;
+        }
+
+        .create-btn:hover {
+            background: linear-gradient(135deg, #1d4ed8, #6d28d9);
+            transform: translateY(-2px);
+        }
+
+        /* 5. Search and filter panel */
+        .filter-container {
+            background: rgba(255, 255, 255, 0.90);
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(51, 65, 85, 0.09);
+            backdrop-filter: blur(10px);
+        }
+
+        .filter-group label {
+            color: #312e81;
+        }
+
+        .filter-group input,
+        .filter-group select {
+            border: 1px solid #c7d2fe;
+            border-radius: 8px;
+            background: #ffffff;
+        }
+
+        .filter-group input:focus,
+        .filter-group select:focus {
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12);
+        }
+
+        /* 6. Clear Filters button */
+        .clear-filter-btn {
+            background: linear-gradient(135deg, #64748b, #475569);
+            border-radius: 8px;
+        }
+
+        .clear-filter-btn:hover {
+            background: linear-gradient(135deg, #475569, #334155);
+        }
+
+        /* 7. Table container */
+        .table-container {
+            background: rgba(255, 255, 255, 0.94);
+            border: 1px solid rgba(255, 255, 255, 0.85);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(51, 65, 85, 0.10);
+        }
+
+        /* 8. Table heading */
+        th {
+            background: linear-gradient(110deg, #172554, #4338ca, #6d28d9);
+            color: #ffffff;
+            padding: 16px;
+        }
+
+        /* 9. Table rows */
+        td {
+            color: #334155;
+            border-bottom: 1px solid #e0e7ff;
+        }
+
+        tbody tr:hover {
+            background: #f0f4ff;
+        }
+
+        /* 10. Action buttons */
+        .action-btn {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            border-radius: 8px;
+        }
+
+        .action-btn:hover {
+            background: linear-gradient(135deg, #1d4ed8, #6d28d9);
+        }
+
+        /* 11. View Details link */
+        .details-link {
+            color: #6d28d9;
+        }
+
+        .details-link:hover {
+            color: #4338ca;
+        }
+
+        /* 12. Delete button */
+        .delete-btn {
+            background: #fff1f2;
+            color: #e11d48;
+            border: 1px solid #fecdd3;
+            border-radius: 8px;
+        }
+
+        .delete-btn:hover {
+            background: #ffe4e6;
+            border-color: #fda4af;
+        }
+
+        /* 13. Status badges */
+        .status-open {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .status-triaged {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .status-assigned {
+            background: #ffedd5;
+            color: #c2410c;
+        }
+
+        .status-in-progress {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .status-fixed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-retesting {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-closed {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-reopened {
+            background: #ffe4e6;
+            color: #be123c;
+        }
+
+        /* 14. Priority badges */
+        .priority-low {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .priority-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .priority-high {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* 15. Severity badges */
+        .severity-minor {
+            background: #e0f2fe;
+            color: #0369a1;
+        }
+
+        .severity-major {
+            background: #ffedd5;
+            color: #c2410c;
+        }
+
+        .severity-critical {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* 16. Logout button */
+        .logout-btn {
+            background: linear-gradient(135deg, #f43f5e, #e11d48);
+            border-radius: 8px;
+        }
+
+        .logout-btn:hover {
+            background: linear-gradient(135deg, #e11d48, #be123c);
+        }
+
+        /* 17. Mobile responsive */
+        @media (max-width: 700px) {
+            .filter-container {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                width: 94%;
+            }
+        }
+    </style>
+
+</head><body><div class="navbar"><h2>🐞AI Bug Tracker</h2>
+
+    <div class="nav-links">
+
+        <a href="/dashboard">Dashboard</a>
+
+        <a href="/projects">Projects</a>
+
+        <a href="/bugs">Bugs</a>
+
+        <a href="/bugs/new">Report Bug</a>
+
+        <form th:action="@{/logout}"
+              method="post"
+              style="display:inline;">
+
+            <input type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}">
+
+            <button type="submit"
+                    class="logout-btn">
+                Logout
+            </button>
+
+        </form>
+
+    </div>
+
+</div><div class="container"><div class="page-header">
+
+    <div>
+
+        <h1>🐞Bug Tracker</h1>
+
+        <p>
+            Manage, assign and track reported bugs.
+        </p>
+
+
+    </div>
+
+    <a href="/bugs/new"
+       class="create-btn">
+        + Report New Bug
+    </a>
+
+</div>
+    <div class="filter-container">
+
+
+        <div class="filter-group">
+            <label>Search</label>
+            <input type="text"
+                   id="bugSearch"
+                   placeholder="Search by ID, title, project...">
+        </div>
+
+        <div class="filter-group">
+            <label>Status</label>
+            <select id="statusFilter">
+                <option value="">All Statuses</option>
+                <option value="OPEN">Open</option>
+                <option value="TRIAGED">Triaged</option>
+                <option value="ASSIGNED">Assigned</option>
+                <option value="IN_PROGRESS">In Progress</option>
+                <option value="FIXED">Fixed</option>
+                <option value="RETESTING">Retesting</option>
+                <option value="CLOSED">Closed</option>
+                <option value="REOPENED">Reopened</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Priority</label>
+            <select id="priorityFilter">
+                <option value="">All Priorities</option>
+                <option value="LOW">Low</option>
+                <option value="MEDIUM">Medium</option>
+                <option value="HIGH">High</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label>Severity</label>
+            <select id="severityFilter">
+                <option value="">All Severities</option>
+                <option value="MINOR">Minor</option>
+                <option value="MAJOR">Major</option>
+                <option value="CRITICAL">Critical</option>
+            </select>
+        </div>
+
+        <button type="button"
+                class="clear-filter-btn"
+                onclick="clearFilters()">
+            Clear Filters
+        </button>
+
+    </div>
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+
+            <tr>
+
+                <th>ID</th>
+                <th>Title</th>
+                <th>Project</th>
+                <th>Reported By</th>
+                <th>Priority</th>
+                <th>Severity</th>
+                <th>Status</th>
+                <th>Assigned To</th>
+                <th>Category</th>
+                <th>Actions</th>
+
+            </tr>
+
+            </thead>
+
+
+            <tbody>
+
+            <tr th:each="bug : ${bugs}"
+                th:attr="data-status=${bug.status},
+             data-priority=${bug.priority},
+             data-severity=${bug.severity}">
+
+                <td th:text="${bug.id}">
+                </td>
+
+                <td th:text="${bug.title}">
+                </td>
+
+                <td th:text="${bug.project.name}">
+                </td>
+
+                <td th:text="${bug.reportedBy.name}">
+                </td>
+
+                <td>
+                 <span class="badge"
+                       th:classappend="' priority-' + ${#strings.toLowerCase(bug.priority.name())}"
+                       th:text="${bug.priority}">
+                 </span>
+                </td>
+
+                <td>
+                   <span class="badge"
+                         th:classappend="' severity-' + ${#strings.toLowerCase(bug.severity.name())}"
+                         th:text="${bug.severity}">
+                    </span>
+                </td>
+
+                <td>
+                 <span class="badge"
+                       th:classappend="' status-' + ${#strings.toLowerCase(bug.status.name()).replace('_', '-')}"
+                       th:text="${bug.status}">
+                 </span>
+                </td>
+                <td>
+
+                <span th:if="${bug.assignedTo != null}"
+                      th:text="${bug.assignedTo.name}">
+                </span>
+
+                    <span th:if="${bug.assignedTo == null}">
+                    Not Assigned
+                </span>
+
+                </td>
+
+                <td th:text="${bug.category}">
+                </td>
+
+
+                <td>
+                    <div class="action-group">
+
+                        <!-- Triage Bug -->
+                        <div th:if="${bug.status.name() == 'OPEN'}">
+
+                            <form th:action="@{/bugs/{id}/triage(id=${bug.id})}"
+                                  method="post"
+                                  class="action-form">
+
+                                <input type="hidden"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}">
+
+                                <button type="submit"
+                                        class="action-btn">
+                                    Triage
+                                </button>
+
+                            </form>
+
+                        </div>
+
+
+                        <!-- Assign Developer -->
+                        <!-- Assign Developer -->
+                        <div th:if="${bug.status.name() == 'TRIAGED'}">
+
+                            <form th:action="@{/bugs/{id}/assign(id=${bug.id})}"
+                                  method="post"
+                                  class="action-form">
+
+                                <input type="hidden"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}">
+
+                                <select name="userId" required>
+
+                                    <option value="">
+                                        Assign To
+                                    </option>
+
+                                    <option th:each="user : ${users}"
+                                            th:if="${user.role.name() == 'DEVELOPER'}"
+                                            th:value="${user.id}"
+                                            th:text="${user.name}">
+                                    </option>
+
+                                </select>
+
+                                <button type="submit"
+                                        class="action-btn">
+                                    Assign
+                                </button>
+
+                            </form>
+
+                        </div>
+
+
+                        <!-- Update Status -->
+                        <div th:if="${!#lists.isEmpty(validStatuses[bug.id])}">
+
+                            <form th:action="@{/bugs/{id}/status(id=${bug.id})}"
+                                  method="post"
+                                  class="action-form">
+
+                                <input type="hidden"
+                                       th:name="${_csrf.parameterName}"
+                                       th:value="${_csrf.token}">
+
+                                <select name="status" required>
+
+                                    <option value="" disabled selected>
+                                        Change Status
+                                    </option>
+
+                                    <option th:each="status : ${validStatuses[bug.id]}"
+                                            th:value="${status}"
+                                            th:text="${status}">
+                                    </option>
+
+                                </select>
+
+                                <button type="submit"
+                                        class="action-btn">
+                                    Update
+                                </button>
+
+                            </form>
+
+                        </div>
+
+
+                        <!-- View Details -->
+                        <a th:href="@{/bugs/{id}(id=${bug.id})}"
+                           class="details-link">
+                            View Details
+                        </a>
+
+
+                        <!-- Delete -->
+                        <form th:action="@{/bugs/delete/{id}(id=${bug.id})}"
+                              method="post">
+
+                            <input type="hidden"
+                                   th:name="${_csrf.parameterName}"
+                                   th:value="${_csrf.token}">
+
+                            <button type="submit"
+                                    class="delete-btn">
+                                Delete
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </td>
+
+            </tr>
+
+
+            <tr th:if="${#lists.isEmpty(bugs)}">
+
+                <td colspan="10"
+                    class="empty-message">
+
+                    No bugs reported yet.
+
+                </td>
+
+            </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+</div>
+<script>
+
+    const searchInput = document.getElementById("bugSearch");
+    const statusFilter = document.getElementById("statusFilter");
+    const priorityFilter = document.getElementById("priorityFilter");
+    const severityFilter = document.getElementById("severityFilter");
+
+    function filterBugs() {
+
+        const searchValue =
+            searchInput.value.toLowerCase().trim();
+
+        const statusValue =
+            statusFilter.value;
+
+        const priorityValue =
+            priorityFilter.value;
+
+        const severityValue =
+            severityFilter.value;
+
+        const rows =
+            document.querySelectorAll("tbody tr[data-status]");
+
+        rows.forEach(row => {
+
+            const rowText =
+                row.innerText.toLowerCase();
+
+            const rowStatus =
+                row.getAttribute("data-status");
+
+            const rowPriority =
+                row.getAttribute("data-priority");
+
+            const rowSeverity =
+                row.getAttribute("data-severity");
+
+            const matchesSearch =
+                rowText.includes(searchValue);
+
+            const matchesStatus =
+                !statusValue ||
+                rowStatus === statusValue;
+
+            const matchesPriority =
+                !priorityValue ||
+                rowPriority === priorityValue;
+
+            const matchesSeverity =
+                !severityValue ||
+                rowSeverity === severityValue;
+
+            row.style.display =
+                matchesSearch &&
+                matchesStatus &&
+                matchesPriority &&
+                matchesSeverity
+                    ? ""
+                    : "none";
+        });
+    }
+
+    function clearFilters() {
+
+        searchInput.value = "";
+        statusFilter.value = "";
+        priorityFilter.value = "";
+        severityFilter.value = "";
+
+        filterBugs();
+    }
+
+    searchInput.addEventListener("input", filterBugs);
+    statusFilter.addEventListener("change", filterBugs);
+    priorityFilter.addEventListener("change", filterBugs);
+    severityFilter.addEventListener("change", filterBugs);
+
+
+
+</script>
+</body></html>

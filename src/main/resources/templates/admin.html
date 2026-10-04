@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Panel - AI Bug Tracker</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #eef2ff, #fdf2f8, #e0f2fe);
+            color: #334155;
+        }
+
+        /* Navbar */
+        .navbar {
+            min-height: 68px;
+            background: linear-gradient(135deg, #6d28d9, #3b82f6);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 32px;
+            color: white;
+            box-shadow: 0 5px 20px rgba(79, 70, 229, 0.2);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: white;
+            text-decoration: none;
+            font-size: 21px;
+            font-weight: 700;
+        }
+
+        .project-logo {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+        }
+
+        .nav-links a {
+            color: #f5f3ff;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: #ddd6fe;
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1250px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        /* Page Header */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 28px;
+            padding: 25px 28px;
+            background: rgba(255, 255, 255, 0.78);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.08);
+        }
+
+        .page-header h1 {
+            margin: 0;
+            font-size: 30px;
+            color: #5b21b6;
+        }
+
+        .page-header p {
+            margin: 8px 0 0;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .admin-badge {
+            background: linear-gradient(135deg, #ede9fe, #dbeafe);
+            color: #6d28d9;
+            padding: 10px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        /* Activity Card */
+        .card {
+            background: rgba(255, 255, 255, 0.88);
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.1);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 24px;
+            border-bottom: 1px solid #ede9fe;
+            background: linear-gradient(135deg, #faf5ff, #eff6ff);
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 21px;
+            color: #5b21b6;
+        }
+
+        .card-header p {
+            margin: 8px 0 0;
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Table */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 850px;
+        }
+
+        th,
+        td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid #ede9fe;
+            font-size: 14px;
+        }
+
+        th {
+            background: linear-gradient(135deg, #6d28d9, #4f46e5);
+            color: white;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        tbody tr {
+            transition: background 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: #f5f3ff;
+        }
+
+        td strong {
+            color: #4c1d95;
+            font-weight: 700;
+        }
+
+        /* Action Badge */
+        .action-badge {
+            display: inline-block;
+            padding: 6px 10px;
+            border-radius: 8px;
+            background: #ede9fe;
+            color: #6d28d9;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* Description */
+        .description {
+            max-width: 420px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        /* Empty State */
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .empty-icon {
+            font-size: 42px;
+            margin-bottom: 15px;
+        }
+
+        .empty-state h3 {
+            color: #5b21b6;
+            font-size: 21px;
+            margin: 0 0 10px;
+        }
+
+        .empty-state p {
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 16px;
+                flex-wrap: wrap;
+                gap: 14px;
+            }
+
+            .nav-links {
+                gap: 14px;
+                flex-wrap: wrap;
+            }
+
+            .container {
+                padding: 24px 14px;
+            }
+
+            .page-header {
+                align-items: flex-start;
+                flex-direction: column;
+                padding: 22px;
+            }
+
+            .page-header h1 {
+                font-size: 25px;
+            }
+
+            .card-header {
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .brand {
+                font-size: 18px;
+            }
+
+            .nav-links {
+                gap: 12px;
+            }
+
+            .nav-links a {
+                font-size: 13px;
+            }
+
+            .admin-badge {
+                font-size: 11px;
+            }
+            .logout-btn {
+                border: none;
+                background: linear-gradient(135deg, #ff6b81, #e8436b);
+                color: white;
+                padding: 10px 17px;
+                border-radius: 9px;
+                cursor: pointer;
+                font-weight: 700;
+                font-size: 14px;
+                transition: transform 0.2s ease;
+            }
+
+            .logout-btn:hover {
+                transform: translateY(-2px);
+                opacity: 0.9;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <a th:href="@{/dashboard}" class="brand">
+        <span>🐞AI Bug Tracker</span>
+    </a>
+
+    <div class="nav-links">
+        <a th:href="@{/dashboard}">Dashboard</a>
+        <a th:href="@{/projects}">Projects</a>
+        <a th:href="@{/bugs}">Bugs</a>
+        <a th:href="@{/reports}">Reports</a>
+        <form th:action="@{/logout}"
+              method="post"
+              style="display: inline; margin: 0;">
+
+            <input type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}">
+
+            <button type="submit" class="logout-btn">
+                Logout
+            </button>
+
+        </form>
+    </div>
+
+</nav>
+
+
+<main class="container">
+
+    <div class="page-header">
+
+        <div>
+            <h1>Admin Panel</h1>
+            <p>System activity and administrative overview</p>
+        </div>
+
+        <span class="admin-badge">
+            ADMINISTRATOR
+        </span>
+
+    </div>
+
+
+    <section class="card">
+
+        <div class="card-header">
+
+            <h2>Activity Logs</h2>
+
+            <p>
+                Track important actions performed by users in the system.
+            </p>
+
+        </div>
+
+
+        <div class="table-wrapper">
+
+            <table th:if="${logs != null and !logs.isEmpty()}">
+
+                <thead>
+                <tr>
+                    <th>Log ID</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Description</th>
+                    <th>Date & Time</th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                <tr th:each="log : ${logs}">
+
+                    <td th:text="${log.id}">
+                        1
+                    </td>
+
+                    <td>
+                        <strong
+                                th:text="${log.user != null ? log.user.name : 'System'}">
+                            Admin
+                        </strong>
+                    </td>
+
+                    <td>
+                        <span class="action-badge"
+                              th:text="${log.action}">
+                            LOGIN
+                        </span>
+                    </td>
+
+                    <td class="description"
+                        th:text="${log.description}">
+                        User performed an action.
+                    </td>
+
+                    <td th:text="${#temporals.format(log.createdAt, 'dd MMM yyyy, hh:mm a')}">
+                        20 Aug 2026, 10:30 AM
+                    </td>
+
+                </tr>
+
+                </tbody>
+
+            </table>
+
+
+            <div class="empty-state"
+                 th:if="${logs == null or logs.isEmpty()}">
+
+                <div class="empty-icon">📋</div>
+
+                <h3>No Activity Logs Yet</h3>
+
+                <p>
+                    User activities will appear here once logging is enabled.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+</body>
+</html>

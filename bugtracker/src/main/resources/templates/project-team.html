@@ -1,0 +1,536 @@
+<!DOCTYPE html><html lang="en"
+                     xmlns:th="http://www.thymeleaf.org"><head><meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Project Team</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #eef2ff 0%, #f5eaff 50%, #e0f2fe 100%);
+            color: #2d2850;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            min-height: 68px;
+            background: linear-gradient(110deg, #6c4bd3, #4779df);
+            color: white;
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: 0 5px 20px rgba(91, 75, 180, 0.22);
+        }
+
+        .navbar h2 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 750;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 18px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-links a {
+            color: #f8f7ff;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.2s ease;
+        }
+
+        .nav-links a:hover {
+            color: #ddd6fe;
+        }
+
+        .logout-btn {
+            border: none;
+            background: linear-gradient(135deg, #ff6b81, #e8436b);
+            color: white;
+            padding: 10px 17px;
+            border-radius: 9px;
+            cursor: pointer;
+            font-weight: 700;
+            box-shadow: 0 4px 10px rgba(232, 67, 107, 0.2);
+            transition: transform 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Main Container */
+        .container {
+            width: 92%;
+            max-width: 1200px;
+            margin: 38px auto;
+        }
+
+        /* Header */
+        .header-card {
+            background: rgba(255, 255, 255, 0.88);
+            padding: 28px 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.1);
+            margin-bottom: 24px;
+            backdrop-filter: blur(12px);
+        }
+
+        .header-card h1 {
+            margin: 0 0 8px;
+            font-size: 30px;
+            color: #5b21b6;
+        }
+
+        .project-name {
+            margin: 0;
+            color: #77718f;
+            line-height: 1.6;
+        }
+
+        .project-name strong {
+            color: #5b3bbd;
+        }
+
+        /* Sections */
+        .section {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 26px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.08);
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+        }
+
+        .section h2 {
+            margin: 0;
+            color: #5b21b6;
+            font-size: 21px;
+        }
+
+        /* Add Member Form */
+        .form-row {
+            display: flex;
+            gap: 13px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        label {
+            font-weight: 700;
+            color: #43376e;
+            font-size: 14px;
+        }
+
+        select {
+            padding: 12px 14px;
+            border: 1px solid #ddd4f4;
+            border-radius: 10px;
+            background: white;
+            color: #3f3760;
+            min-width: 220px;
+            font-size: 14px;
+            transition: 0.2s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #8b6be8;
+            box-shadow: 0 0 0 4px rgba(139, 107, 232, 0.12);
+        }
+
+        /* Buttons */
+        .btn {
+            border: none;
+            padding: 12px 19px;
+            border-radius: 10px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #8056df, #4e7ce8);
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 5px 14px rgba(100, 83, 205, 0.2);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(100, 83, 205, 0.3);
+        }
+
+        /* Team Table */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 13px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 700px;
+            overflow: hidden;
+        }
+
+        th {
+            background: linear-gradient(135deg, #6d28d9, #4f46e5);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid #ede9fe;
+            color: #5f5a78;
+            font-size: 14px;
+        }
+
+        tbody tr {
+            transition: background 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: #f8f5ff;
+        }
+
+        td:first-child {
+            font-weight: 700;
+            color: #4c1d95;
+        }
+
+        /* Project Role */
+        td:nth-child(3) {
+            font-weight: 700;
+            color: #5b3bbd;
+        }
+
+        /* Remove Button */
+        .remove-btn {
+            border: none;
+            background: linear-gradient(135deg, #ff7185, #e8436b);
+            color: white;
+            padding: 9px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 13px;
+            transition: transform 0.2s ease;
+        }
+
+        .remove-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Empty Message */
+        .empty-message {
+            text-align: center;
+            padding: 35px !important;
+            color: #817b99;
+            font-size: 14px;
+        }
+
+        /* Back Button */
+        .back-btn {
+            display: inline-block;
+            padding: 12px 19px;
+            background: #ede9f8;
+            color: #5d4a91;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 700;
+            border: 1px solid #ddd4f4;
+            transition: 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: #ded5f4;
+            transform: translateY(-2px);
+        }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+
+            .navbar {
+                padding: 16px 20px;
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .nav-links {
+                gap: 13px;
+            }
+
+            .container {
+                width: 94%;
+                margin: 25px auto;
+            }
+
+            .header-card,
+            .section {
+                padding: 22px 20px;
+                border-radius: 17px;
+            }
+
+            .header-card h1 {
+                font-size: 26px;
+            }
+
+            .form-row {
+                align-items: stretch;
+                flex-direction: column;
+            }
+
+            select,
+            .btn {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 500px) {
+
+            .navbar h2 {
+                font-size: 19px;
+            }
+
+            .nav-links {
+                gap: 11px;
+            }
+
+            .nav-links a {
+                font-size: 13px;
+            }
+
+            .section h2 {
+                font-size: 19px;
+            }
+        }
+    </style>
+
+</head><body><div class="navbar"><h2>AI Bug Tracker</h2>
+
+    <div class="nav-links">
+
+        <a href="/dashboard">Dashboard</a>
+
+        <a href="/projects">Projects</a>
+
+        <a href="/bugs">Bugs</a>
+
+        <a href="/bugs/new">Report Bug</a>
+
+        <form th:action="@{/logout}"
+              method="post"
+              style="display:inline;">
+
+            <input type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}">
+
+            <button type="submit"
+                    class="logout-btn">
+                Logout
+            </button>
+
+        </form>
+
+    </div>
+
+</div><div class="container"><!-- Project Header -->
+
+    <div class="header-card">
+
+        <h1>Project Team</h1>
+
+        <p class="project-name">
+
+            Project:
+            <strong th:text="${project.name}">
+                Project Name
+            </strong>
+
+        </p>
+
+    </div>
+
+
+    <!-- Add Team Member -->
+
+    <div class="section">
+
+        <h2>Add Team Member</h2>
+
+        <br>
+
+        <form th:action="@{/projects/{id}/team/add(id=${project.id})}"
+              method="post">
+
+            <input type="hidden"
+                   th:name="${_csrf.parameterName}"
+                   th:value="${_csrf.token}">
+
+            <div class="form-row">
+
+                <label>
+                    User:
+                </label>
+
+                <select name="userId"
+                        required>
+
+                    <option value="">
+                        -- Select User --
+                    </option>
+
+                    <option th:each="user : ${users}"
+                            th:value="${user.id}"
+                            th:text="${user.name + ' (' + user.email + ')'}">
+                    </option>
+
+                </select>
+
+
+                <label>
+                    Project Role:
+                </label>
+
+                <select name="memberRole"
+                        required>
+
+                    <option value="">
+                        -- Select Role --
+                    </option>
+
+                    <option th:each="role : ${memberRoles}"
+                            th:value="${role}"
+                            th:text="${role}">
+                    </option>
+
+                </select>
+
+
+                <button type="submit"
+                        class="btn">
+                    Add Member
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- Current Team -->
+
+    <div class="section">
+
+        <h2>Current Team</h2>
+
+        <br>
+
+        <div class="table-container">
+
+            <table>
+
+                <thead>
+
+                <tr>
+
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Project Role</th>
+                    <th>Joined At</th>
+                    <th>Action</th>
+
+                </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                <tr th:each="member : ${members}">
+
+                    <td th:text="${member.user.name}">
+                    </td>
+
+                    <td th:text="${member.user.email}">
+                    </td>
+
+                    <td th:text="${member.memberRole}">
+                    </td>
+
+                    <td th:text="${member.joinedAt}">
+                    </td>
+
+                    <td>
+
+                        <form th:action="@{/projects/{projectId}/team/remove/{memberId}
+                                     (projectId=${project.id},
+                                      memberId=${member.id})}"
+                              method="post">
+
+                            <input type="hidden"
+                                   th:name="${_csrf.parameterName}"
+                                   th:value="${_csrf.token}">
+
+                            <button type="submit"
+                                    class="remove-btn">
+                                Remove
+                            </button>
+
+                        </form>
+
+                    </td>
+
+                </tr>
+
+
+                <tr th:if="${#lists.isEmpty(members)}">
+
+                    <td colspan="5"
+                        class="empty-message">
+
+                        No team members added yet.
+
+                    </td>
+
+                </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- Back -->
+
+    <a href="/projects"
+       class="back-btn">
+        ← Back to Projects
+    </a>
+
+</div></body></html>
