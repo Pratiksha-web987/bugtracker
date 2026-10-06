@@ -65,7 +65,9 @@ public class SecurityConfig {
                         )
                         .hasAnyRole(
                                 "ADMIN",
-                                "PROJECT_MANAGER"
+                                "PROJECT_MANAGER",
+                                "DEVELOPER",
+                                 "TESTER"
                         )
 
                         // Admin only

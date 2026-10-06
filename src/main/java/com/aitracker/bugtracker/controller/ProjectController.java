@@ -143,6 +143,7 @@ public class ProjectController {
     }
 
     @PostMapping("/{id}/test-connectivity")
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     public String testConnectivity(
             @PathVariable Long id,
             Model model) {

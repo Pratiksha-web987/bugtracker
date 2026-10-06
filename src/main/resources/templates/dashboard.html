@@ -520,9 +520,13 @@
         </a>
 
         <a href="/projects"
-           th:if="${user.role.name() == 'ADMIN' or user.role.name() == 'PROJECT_MANAGER'}">
+           th:if="${user.role.name() == 'ADMIN'
+       or user.role.name() == 'PROJECT_MANAGER'
+       or user.role.name() == 'DEVELOPER'
+       or user.role.name() == 'TESTER'}">
             Projects
         </a>
+
         <a href="/users"
            th:if="${user.role.name() == 'ADMIN'}">
             Users
