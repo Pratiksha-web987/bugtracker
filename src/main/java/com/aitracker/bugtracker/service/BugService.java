@@ -380,6 +380,7 @@ public class BugService {
         switch (user.getRole()) {
 
             case ADMIN:
+            case PROJECT_MANAGER:
                 return bugRepository.findAll();
 
             case DEVELOPER:
@@ -412,24 +413,6 @@ public class BugService {
                         .distinct()
                         .toList();
             }
-
-            case PROJECT_MANAGER: {
-                List<ProjectMember> memberships =
-                        projectMemberRepository.findByUser(user);
-
-                List<Project> managerProjects = memberships.stream()
-                        .filter(member ->
-                                member.getMemberRole() == ProjectMemberRole.PROJECT_MANAGER)
-                        .map(ProjectMember::getProject)
-                        .toList();
-
-                if (managerProjects.isEmpty()) {
-                    return List.of();
-                }
-
-                return bugRepository.findByProjectIn(managerProjects);
-            }
-
             default:
                 return List.of();
         }
