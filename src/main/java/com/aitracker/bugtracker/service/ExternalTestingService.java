@@ -63,9 +63,18 @@ public class ExternalTestingService {
             ChromeOptions options = new ChromeOptions();
             options.addArguments("--start-maximized");
 
+        if (Boolean.parseBoolean(
+            System.getenv("RAILWAY_CHROME_HEADLESS"))) {
+             options.addArguments(
+            "--headless=new",
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--window-size=1920,1080"
+            );
+            }
+
             LoggingPreferences logs = new LoggingPreferences();
             logs.enable(LogType.BROWSER, Level.ALL);
-
             options.setCapability("goog:loggingPrefs", logs);
 
             driver = new ChromeDriver(options);
