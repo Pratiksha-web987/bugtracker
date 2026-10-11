@@ -682,63 +682,63 @@ public class ExternalTestingService {
 
             return result.toString();
 
-        } catch (Exception e) {
+        } } catch (Exception e) {
 
-            /*
-             * Browser/network failure itself becomes a bug.
-             */
+        String errorMessage = e.getMessage() == null
+        ? "Unknown browser automation error"
+        : e.getMessage();
 
-            String errorMessage =
-                    e.getMessage() == null
-                            ? "Unknown browser automation error"
-                            : e.getMessage();
+         AutomatedTestReport errorReport = new AutomatedTestReport();
+            errorReport.setProjectName(project.getName());
+          errorReport.setProjectUrl(project.getProjectUrl());
+         errorReport.setTotalTests(1);
+          errorReport.setPassed(0);
+       errorReport.setFailed(1);
+          errorReport.setOverallStatus("FAILED");
 
-            Long bugId = System.currentTimeMillis();
+        List<AutomatedTestResult> errorResults = new ArrayList<>();
+        errorResults.add(new AutomatedTestResult(
+        "Browser Automation",
+        "FAIL",
+        errorMessage
+        ));
+         errorReport.setTests(errorResults);
+         lastReport = errorReport;
 
-            List<ProjectMember> testers =
-                    projectMemberRepository.findByProjectAndMemberRole(
-                            project,
-                            ProjectMemberRole.TESTER
-                    );
+         Long bugId = System.currentTimeMillis();
 
-            if (!testers.isEmpty()) {
+        List<ProjectMember> testers =
+        projectMemberRepository.findByProjectAndMemberRole(
+                project,
+                ProjectMemberRole.TESTER
+        );
 
-                User reporter = testers.get(0).getUser();
-                String bugTitle =
-                        "Automated Browser Test Failed - "
-                                + project.getName();
+      if (!testers.isEmpty()) {
+        User reporter = testers.get(0).getUser();
 
-                String bugDescription =
-                        "Selenium was unable to complete the automated "
-                                + "browser test.\n\n"
-                                + "URL: "
-                                + project.getProjectUrl()
-                                + "\n\n"
-                                + "Error:\n"
-                                + errorMessage;
+           String bugTitle =
+            "Automated Browser Test Failed - " + project.getName();
 
-                bugService.createAutomatedBug(
-                        bugId,
-                        bugTitle,
-                        bugDescription,
-                        project.getId(),
-                        reporter.getId()
-                );
+      String bugDescription =
+            "Selenium was unable to complete the automated browser test.\n\n"
+            + "URL: " + project.getProjectUrl()
+            + "\n\nError:\n" + errorMessage;
 
-                return "❌ Automated browser test failed.\n\n"
-                        + "🐞 Automatic Bug Created\n"
-                        + "Bug ID: "
-                        + bugId
-                        + "\n\n"
-                        + "Error: "
-                        + errorMessage;
-            }
+       bugService.createAutomatedBug(
+            bugId,
+            bugTitle,
+            bugDescription,
+            project.getId(),
+            reporter.getId()
+      );
 
-            return "❌ Automated browser test failed.\n"
-                    + "Error: "
-                    + errorMessage;
+    errorReport.setBugId(bugId);
+    errorReport.setBugStatus("TRIAGED");
+    }
 
-        } finally {
+   return "Automated browser test failed. Error: " + errorMessage;
+
+}finally {
 
             if (driver != null) {
                 driver.quit();
