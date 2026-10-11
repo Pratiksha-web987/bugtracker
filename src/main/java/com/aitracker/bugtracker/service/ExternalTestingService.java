@@ -682,7 +682,7 @@ public class ExternalTestingService {
 
             return result.toString();
 
-        } } catch (Exception e) {
+        }  catch (Exception e) {
 
         String errorMessage = e.getMessage() == null
         ? "Unknown browser automation error"
@@ -738,7 +738,7 @@ public class ExternalTestingService {
 
    return "Automated browser test failed. Error: " + errorMessage;
 
-}finally {
+} finally {
 
             if (driver != null) {
                 driver.quit();
