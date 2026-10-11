@@ -690,11 +690,11 @@ public class ExternalTestingService {
 
          AutomatedTestReport errorReport = new AutomatedTestReport();
             errorReport.setProjectName(project.getName());
-          errorReport.setProjectUrl(project.getProjectUrl());
-         errorReport.setTotalTests(1);
-          errorReport.setPassed(0);
-       errorReport.setFailed(1);
-          errorReport.setOverallStatus("FAILED");
+           errorReport.setProjectUrl(project.getProjectUrl());
+           errorReport.setTotalTests(1);
+           errorReport.setPassed(0);
+           errorReport.setFailed(1);
+           errorReport.setOverallStatus("FAILED");
 
         List<AutomatedTestResult> errorResults = new ArrayList<>();
         errorResults.add(new AutomatedTestResult(
