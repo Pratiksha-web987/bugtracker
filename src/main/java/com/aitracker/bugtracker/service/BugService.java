@@ -380,8 +380,24 @@ public class BugService {
         switch (user.getRole()) {
 
             case ADMIN:
-            case PROJECT_MANAGER:
                 return bugRepository.findAll();
+
+            case PROJECT_MANAGER: {
+                List<ProjectMember> memberships =
+                        projectMemberRepository.findByUser(user);
+
+                List<Project> managerProjects = memberships.stream()
+                        .filter(member ->
+                                member.getMemberRole()
+                                        == ProjectMemberRole.PROJECT_MANAGER)
+                        .map(ProjectMember::getProject)
+                        .distinct()
+                        .toList();
+
+                return managerProjects.isEmpty()
+                        ? List.of()
+                        : bugRepository.findByProjectIn(managerProjects);
+            }
 
             case DEVELOPER:
                 return bugRepository.findByAssignedTo(user);
@@ -392,7 +408,8 @@ public class BugService {
 
                 List<Project> testerProjects = memberships.stream()
                         .filter(member ->
-                                member.getMemberRole() == ProjectMemberRole.TESTER)
+                                member.getMemberRole()
+                                        == ProjectMemberRole.TESTER)
                         .map(ProjectMember::getProject)
                         .toList();
 
@@ -405,7 +422,8 @@ public class BugService {
                                 : bugRepository.findByProjectIn(testerProjects)
                                 .stream()
                                 .filter(bug ->
-                                        bug.getStatus() == BugStatus.RETESTING)
+                                        bug.getStatus()
+                                                == BugStatus.RETESTING)
                                 .toList();
 
                 return java.util.stream.Stream
@@ -413,6 +431,7 @@ public class BugService {
                         .distinct()
                         .toList();
             }
+
             default:
                 return List.of();
         }

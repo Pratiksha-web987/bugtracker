@@ -13,9 +13,10 @@ import com.aitracker.bugtracker.entity.User;
 import com.aitracker.bugtracker.service.ProjectMemberService;
 import com.aitracker.bugtracker.service.UserService;
 import org.springframework.security.access.prepost.PreAuthorize;
-
-import java.util.List;
 import java.time.LocalDate;
+import org.springframework.security.core.Authentication;
+import com.aitracker.bugtracker.entity.Role;
+import org.springframework.security.access.AccessDeniedException;
 
 @Controller
 @RequestMapping("/projects")
@@ -44,10 +45,15 @@ public class ProjectController {
     // Project list page
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'DEVELOPER', 'TESTER')")
-    public String projectList(Model model) {
+    public String projectList(Model model, Authentication authentication) {
 
-        model.addAttribute("projects",
-                projectService.getAllProjects());
+        User currentUser = userService.getUserByEmail(authentication.getName());
+
+        if (currentUser.getRole() == Role.ADMIN) {
+            model.addAttribute("projects", projectService.getAllProjects());
+        } else {
+            model.addAttribute("projects", projectService.getProjectsForUser(currentUser));
+        }
 
         return "projects";
     }
@@ -66,7 +72,13 @@ public class ProjectController {
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     public String showEditProjectPage(
             @PathVariable Long id,
-            Model model) {
+            Model model,
+            Authentication authentication) {
+
+        User currentUser =
+                userService.getUserByEmail(authentication.getName());
+
+        requireProjectManagerAccess(id, currentUser);
 
         Project project = projectService.getProjectById(id);
 
@@ -79,37 +91,26 @@ public class ProjectController {
 
         return "project-edit";
     }
-
     // Project details page
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'DEVELOPER', 'TESTER')")
     public String projectDetails(
             @PathVariable Long id,
-            Model model) {
+            Model model,
+            Authentication authentication) {
+
+        User currentUser =
+                userService.getUserByEmail(authentication.getName());
+
+        requireProjectAccess(id, currentUser);
 
         Project project = projectService.getProjectById(id);
 
         model.addAttribute("project", project);
-
-        model.addAttribute(
-                "bugs",
-                bugService.getProjectBugs(id)
-        );
-
-        model.addAttribute(
-                "members",
-                projectMemberService.getProjectMembers(id)
-        );
-
-        model.addAttribute(
-                "users",
-                userService.getAllUsers()
-        );
-
-        model.addAttribute(
-                "memberRoles",
-                ProjectMemberRole.values()
-        );
+        model.addAttribute("bugs", bugService.getProjectBugs(id));
+        model.addAttribute("members", projectMemberService.getProjectMembers(id));
+        model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("memberRoles", ProjectMemberRole.values());
 
         return "project-details";
     }
@@ -119,34 +120,60 @@ public class ProjectController {
     public String addMember(
             @PathVariable Long id,
             @RequestParam Long userId,
-            @RequestParam ProjectMemberRole memberRole) {
+            @RequestParam ProjectMemberRole memberRole,
+            Authentication authentication) {
 
-        projectMemberService.addMember(
-                id,
-                userId,
-                memberRole
-        );
+        User currentUser =
+                userService.getUserByEmail(authentication.getName());
+
+        requireProjectManagerAccess(id, currentUser);
+
+        projectMemberService.addMember(id, userId, memberRole);
 
         return "redirect:/projects/" + id;
     }
+
 
     // Remove team member
     @PostMapping("/{id}/members/remove")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     public String removeMember(
             @PathVariable Long id,
-            @RequestParam Long memberId) {
+            @RequestParam Long memberId,
+            Authentication authentication) {
+
+        User currentUser =
+                userService.getUserByEmail(authentication.getName());
+
+        requireProjectManagerAccess(id, currentUser);
+
+        boolean memberBelongsToProject =
+                projectMemberService.getProjectMembers(id)
+                        .stream()
+                        .anyMatch(member ->
+                                member.getId().equals(memberId));
+
+        if (!memberBelongsToProject) {
+            throw new AccessDeniedException(
+                    "This member does not belong to this project");
+        }
 
         projectMemberService.removeMember(memberId);
 
         return "redirect:/projects/" + id;
     }
-
+    // Test external project connectivity
     @PostMapping("/{id}/test-connectivity")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     public String testConnectivity(
             @PathVariable Long id,
-            Model model) {
+            Model model,
+            Authentication authentication) {
+
+        User currentUser =
+                userService.getUserByEmail(authentication.getName());
+
+        requireProjectManagerAccess(id, currentUser);
 
         Project project = projectService.getProjectById(id);
 
@@ -155,6 +182,10 @@ public class ProjectController {
 
         model.addAttribute("project", project);
         model.addAttribute("bugs", bugService.getProjectBugs(id));
+        model.addAttribute(
+                "members", projectMemberService.getProjectMembers(id));
+        model.addAttribute("users", userService.getAllUsers());
+        model.addAttribute("memberRoles", ProjectMemberRole.values());
         model.addAttribute("testResult", result);
 
         return "project-details";
@@ -195,9 +226,15 @@ public class ProjectController {
             @RequestParam(required = false) String description,
             @RequestParam ProjectType projectType,
             @RequestParam(required = false) String projectUrl,
-            @RequestParam java.time.LocalDate startDate,
-            @RequestParam java.time.LocalDate endDate,
-            @RequestParam com.aitracker.bugtracker.entity.ProjectStatus status) {
+            @RequestParam LocalDate startDate,
+            @RequestParam LocalDate endDate,
+            @RequestParam com.aitracker.bugtracker.entity.ProjectStatus status,
+            Authentication authentication) {
+
+        User currentUser =
+                userService.getUserByEmail(authentication.getName());
+
+        requireProjectManagerAccess(id, currentUser);
 
         projectService.updateProject(
                 id,
@@ -212,14 +249,64 @@ public class ProjectController {
 
         return "redirect:/projects";
     }
-
     // Delete project
     @PostMapping("/delete/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
-    public String deleteProject(@PathVariable Long id) {
+    public String deleteProject(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        User currentUser =
+                userService.getUserByEmail(authentication.getName());
+
+        requireProjectManagerAccess(id, currentUser);
 
         projectService.deleteProject(id);
 
         return "redirect:/projects";
+    }
+    private void requireProjectAccess(Long projectId, User currentUser) {
+        if (currentUser.getRole() == Role.ADMIN) {
+            return;
+        }
+
+        boolean assigned = projectMemberService
+                .getProjectMembers(projectId)
+                .stream()
+                .anyMatch(member ->
+                        member.getUser().getId().equals(currentUser.getId())
+                                && (currentUser.getRole() != Role.PROJECT_MANAGER
+                                || member.getMemberRole()
+                                == ProjectMemberRole.PROJECT_MANAGER));
+
+        if (!assigned) {
+            throw new AccessDeniedException(
+                    "You are not assigned to this project");
+        }
+    }
+
+    private void requireProjectManagerAccess(
+            Long projectId, User currentUser) {
+        if (currentUser.getRole() == Role.ADMIN) {
+            return;
+        }
+
+        if (currentUser.getRole() != Role.PROJECT_MANAGER) {
+            throw new AccessDeniedException(
+                    "Only Admin or assigned Project Manager can manage this project");
+        }
+
+        boolean assigned = projectMemberService
+                .getProjectMembers(projectId)
+                .stream()
+                .anyMatch(member ->
+                        member.getUser().getId().equals(currentUser.getId())
+                                && member.getMemberRole()
+                                == ProjectMemberRole.PROJECT_MANAGER);
+
+        if (!assigned) {
+            throw new AccessDeniedException(
+                    "You are not assigned to this project");
+        }
     }
 }

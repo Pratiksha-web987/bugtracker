@@ -7,14 +7,21 @@ import com.aitracker.bugtracker.repository.ProjectRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import com.aitracker.bugtracker.entity.ProjectMember;
+import com.aitracker.bugtracker.repository.ProjectMemberRepository;
 
 @Service
 public class ProjectService {
 
     private final ProjectRepository projectRepository;
+    private final ProjectMemberRepository projectMemberRepository;
 
-    public ProjectService(ProjectRepository projectRepository) {
+    public ProjectService(
+            ProjectRepository projectRepository,
+            ProjectMemberRepository projectMemberRepository) {
+
         this.projectRepository = projectRepository;
+        this.projectMemberRepository = projectMemberRepository;
     }
 
     // Create Project
@@ -40,7 +47,10 @@ public class ProjectService {
 
     // Get all projects
     public List<Project> getAllProjects() {
-        return projectRepository.findAll();
+        return projectRepository.findAll()
+                .stream()
+                .sorted(java.util.Comparator.comparing(Project::getId))
+                .toList();
     }
 
     // Get project by ID
@@ -82,5 +92,27 @@ public class ProjectService {
         project.setStatus(status);
 
         return projectRepository.save(project);
+    }
+    // Get projects assigned to a user
+    public List<Project> getProjectsForUser(
+            com.aitracker.bugtracker.entity.User user) {
+
+        return projectMemberRepository.findByUser(user)
+                .stream()
+                .map(ProjectMember::getProject)
+                .distinct()
+                .sorted(java.util.Comparator.comparing(Project::getId))
+                .toList();
+    }
+
+    // Check whether a user is assigned to a project
+    public boolean isUserAssignedToProject(
+            com.aitracker.bugtracker.entity.User user,
+            Long projectId) {
+
+        return projectMemberRepository.findByUser(user)
+                .stream()
+                .anyMatch(member ->
+                        member.getProject().getId().equals(projectId));
     }
 }

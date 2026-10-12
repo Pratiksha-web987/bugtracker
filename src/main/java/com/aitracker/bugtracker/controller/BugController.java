@@ -21,6 +21,10 @@ import org.springframework.security.core.Authentication;
 import com.aitracker.bugtracker.service.BugCommentService;
 import com.aitracker.bugtracker.service.AIService;
 import com.aitracker.bugtracker.entity.Bug;
+import com.aitracker.bugtracker.entity.Role;
+import com.aitracker.bugtracker.entity.ProjectMemberRole;
+import com.aitracker.bugtracker.service.ProjectMemberService;
+import org.springframework.security.access.AccessDeniedException;
 
 @Controller
 @RequestMapping("/bugs")
@@ -32,6 +36,7 @@ public class BugController {
     private final UserService userService;
     private final BugCommentService bugCommentService;
     private final AIService aiService;
+    private final ProjectMemberService projectMemberService;
 
     public BugController(
             BugService bugService,
@@ -39,7 +44,8 @@ public class BugController {
             UserRepository userRepository,
             UserService userService,
             BugCommentService bugCommentService,
-            AIService aiService) {
+            AIService aiService,
+            ProjectMemberService projectMemberService) {
 
         this.bugService = bugService;
         this.projectRepository = projectRepository;
@@ -47,8 +53,8 @@ public class BugController {
         this.userService = userService;
         this.bugCommentService = bugCommentService;
         this.aiService = aiService;
+        this.projectMemberService = projectMemberService;
     }
-
     // All bugs
     @GetMapping
     public String listBugs(Model model, Authentication authentication) {
@@ -86,52 +92,48 @@ public class BugController {
     @GetMapping("/{id}")
     public String bugDetails(
             @PathVariable Long id,
-            Model model) {
+            Model model,
+            Authentication authentication) {
 
-        model.addAttribute(
-                "bug",
-                bugService.getBugById(id)
-        );
+        User currentUser =
+                userService.getUserByEmail(authentication.getName());
 
-        model.addAttribute(
-                "users",
-                userRepository.findAll()
-        );
+        requireBugAccess(id, currentUser);
 
-        model.addAttribute(
-                "statuses",
-                com.aitracker.bugtracker.entity.BugStatus.values()
-        );
-        model.addAttribute(
-                "comments",
-                bugCommentService.getCommentsByBug(id)
-        );
+        model.addAttribute("bug", bugService.getBugById(id));
+        model.addAttribute("users", userRepository.findAll());
+        model.addAttribute("statuses", BugStatus.values());
+        model.addAttribute("comments", bugCommentService.getCommentsByBug(id));
+
         return "bug-details";
     }
 
     // Create bug page
     @GetMapping("/new")
-    public String showCreateBugPage(Model model) {
+    public String showCreateBugPage(
+            Model model,
+            Authentication authentication) {
 
-        model.addAttribute(
-                "projects",
-                projectRepository.findAll()
-        );
+        User currentUser =
+                userService.getUserByEmail(authentication.getName());
 
-        model.addAttribute(
-                "users",
-                userRepository.findAll()
-        );
+        List<Project> availableProjects = projectRepository.findAll()
+                .stream()
+                .filter(project ->
+                        currentUser.getRole() == Role.ADMIN
+                                || projectMemberService.getProjectMembers(project.getId())
+                                .stream()
+                                .anyMatch(member ->
+                                        member.getUser().getId().equals(currentUser.getId())
+                                                && (currentUser.getRole() != Role.PROJECT_MANAGER
+                                                || member.getMemberRole()
+                                                == ProjectMemberRole.PROJECT_MANAGER)))
+                .toList();
 
-        model.addAttribute(
-                "priorities",
-                BugPriority.values()
-        );
-
-        model.addAttribute(
-                "severities",
-                BugSeverity.values()
-        );
+        model.addAttribute("projects", availableProjects);
+        model.addAttribute("users", userRepository.findAll());
+        model.addAttribute("priorities", BugPriority.values());
+        model.addAttribute("severities", BugSeverity.values());
 
         return "bug-form";
     }
@@ -144,11 +146,9 @@ public class BugController {
         User currentUser =
                 userService.getUserByEmail(authentication.getName());
 
-        bugCommentService.addComment(
-                id,
-                currentUser,
-                comment
-        );
+        requireBugAccess(id, currentUser);
+
+        bugCommentService.addComment(id, currentUser, comment);
 
         return "redirect:/bugs/" + id;
     }
@@ -162,10 +162,9 @@ public class BugController {
         User currentUser =
                 userService.getUserByEmail(authentication.getName());
 
-        bugCommentService.deleteComment(
-                commentId,
-                currentUser
-        );
+        requireBugAccess(bugId, currentUser);
+
+        bugCommentService.deleteComment(commentId, currentUser);
 
         return "redirect:/bugs/" + bugId;
     }
@@ -183,8 +182,13 @@ public class BugController {
             @RequestParam Long reportedById,
             @RequestParam BugPriority priority,
             @RequestParam BugSeverity severity,
-            @RequestParam(required = false) String category) {
+            @RequestParam(required = false) String category,
+            Authentication authentication) {
 
+        User currentUser =
+                userService.getUserByEmail(authentication.getName());
+
+        requireProjectAccess(projectId, currentUser);
 
         bugService.createBug(
                 id,
@@ -209,22 +213,17 @@ public class BugController {
     @GetMapping("/{id}/edit")
     public String showEditBugPage(
             @PathVariable Long id,
-            Model model) {
+            Model model,
+            Authentication authentication) {
 
-        model.addAttribute(
-                "bug",
-                bugService.getBugById(id)
-        );
+        User currentUser =
+                userService.getUserByEmail(authentication.getName());
 
-        model.addAttribute(
-                "priorities",
-                BugPriority.values()
-        );
+        requireBugAccess(id, currentUser);
 
-        model.addAttribute(
-                "severities",
-                BugSeverity.values()
-        );
+        model.addAttribute("bug", bugService.getBugById(id));
+        model.addAttribute("priorities", BugPriority.values());
+        model.addAttribute("severities", BugSeverity.values());
 
         return "bug-edit";
     }
@@ -240,7 +239,13 @@ public class BugController {
             @RequestParam(required = false) String actualResult,
             @RequestParam BugPriority priority,
             @RequestParam BugSeverity severity,
-            @RequestParam(required = false) String category) {
+            @RequestParam(required = false) String category,
+            Authentication authentication) {
+
+        User currentUser =
+                userService.getUserByEmail(authentication.getName());
+
+        requireBugAccess(id, currentUser);
 
         bugService.updateBug(
                 id,
@@ -261,12 +266,19 @@ public class BugController {
     @PostMapping("/{id}/assign")
     public String assignBug(
             @PathVariable Long id,
-            @RequestParam Long userId) {
+            @RequestParam Long userId,
+            Authentication authentication) {
+
+        User currentUser =
+                userService.getUserByEmail(authentication.getName());
+
+        requireBugAccess(id, currentUser);
 
         bugService.assignBug(id, userId);
 
         return "redirect:/bugs";
     }
+    // Triage bug
     // Triage bug
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     @PostMapping("/{id}/triage")
@@ -276,6 +288,8 @@ public class BugController {
 
         User currentUser =
                 userService.getUserByEmail(authentication.getName());
+
+        requireBugAccess(id, currentUser);
 
         bugService.updateStatus(
                 id,
@@ -287,6 +301,7 @@ public class BugController {
     }
 
     // Update bug status
+    // Update bug status
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER', 'DEVELOPER', 'TESTER')")
     @PostMapping("/{id}/status")
     public String updateStatus(
@@ -297,6 +312,8 @@ public class BugController {
         User currentUser =
                 userService.getUserByEmail(authentication.getName());
 
+        requireBugAccess(id, currentUser);
+
         bugService.updateStatus(
                 id,
                 status,
@@ -305,11 +322,17 @@ public class BugController {
 
         return "redirect:/bugs";
     }
-
     // Delete bug
     @PreAuthorize("hasAnyRole('ADMIN', 'PROJECT_MANAGER')")
     @PostMapping("/delete/{id}")
-    public String deleteBug(@PathVariable Long id) {
+    public String deleteBug(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        User currentUser =
+                userService.getUserByEmail(authentication.getName());
+
+        requireBugAccess(id, currentUser);
 
         bugService.deleteBug(id);
 
@@ -317,7 +340,14 @@ public class BugController {
     }
     @GetMapping("/{id}/ai-analysis")
     @ResponseBody
-    public String analyzeBugWithAI(@PathVariable Long id) {
+    public String analyzeBugWithAI(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        User currentUser =
+                userService.getUserByEmail(authentication.getName());
+
+        requireBugAccess(id, currentUser);
 
         Bug bug = bugService.getBugById(id);
 
@@ -328,13 +358,23 @@ public class BugController {
     }
     @GetMapping("/{id}/duplicate-check")
     @ResponseBody
-    public String checkDuplicateBug(@PathVariable Long id) {
+    public String checkDuplicateBug(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        User currentUser =
+                userService.getUserByEmail(authentication.getName());
+
+        requireBugAccess(id, currentUser);
 
         Bug newBug = bugService.getBugById(id);
 
         List<Bug> existingBugs = bugService.getAllBugs()
                 .stream()
                 .filter(bug -> !bug.getId().equals(id))
+                .filter(bug ->
+                        bug.getProject().getId()
+                                .equals(newBug.getProject().getId()))
                 .toList();
 
         return aiService.detectDuplicateBug(
@@ -345,7 +385,14 @@ public class BugController {
     }
     @GetMapping("/{id}/root-cause")
     @ResponseBody
-    public String analyzeRootCause(@PathVariable Long id) {
+    public String analyzeRootCause(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        User currentUser =
+                userService.getUserByEmail(authentication.getName());
+
+        requireBugAccess(id, currentUser);
 
         Bug bug = bugService.getBugById(id);
 
@@ -356,7 +403,15 @@ public class BugController {
     }
     @GetMapping("/{id}/fix-suggestion")
     @ResponseBody
-    public String suggestFix(@PathVariable Long id) {
+    public String suggestFix(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        User currentUser =
+                userService.getUserByEmail(authentication.getName());
+
+        requireBugAccess(id, currentUser);
+
         Bug bug = bugService.getBugById(id);
 
         return aiService.suggestFixAndDebuggingSteps(
@@ -366,7 +421,14 @@ public class BugController {
     }
     @GetMapping("/{id}/developer-recommendation")
     @ResponseBody
-    public String recommendDeveloper(@PathVariable Long id) {
+    public String recommendDeveloper(
+            @PathVariable Long id,
+            Authentication authentication) {
+
+        User currentUser =
+                userService.getUserByEmail(authentication.getName());
+
+        requireBugAccess(id, currentUser);
 
         Bug bug = bugService.getBugById(id);
 
@@ -377,6 +439,33 @@ public class BugController {
                 bug.getDescription(),
                 developers
         );
+    }
+    private void requireProjectAccess(Long projectId, User currentUser) {
+
+        if (currentUser.getRole() == Role.ADMIN) {
+            return;
+        }
+
+        boolean assigned = projectMemberService
+                .getProjectMembers(projectId)
+                .stream()
+                .anyMatch(member ->
+                        member.getUser().getId().equals(currentUser.getId())
+                                && (currentUser.getRole() != Role.PROJECT_MANAGER
+                                || member.getMemberRole()
+                                == ProjectMemberRole.PROJECT_MANAGER));
+
+        if (!assigned) {
+            throw new AccessDeniedException(
+                    "You are not assigned to this project");
+        }
+    }
+
+    private void requireBugAccess(Long bugId, User currentUser) {
+
+        Bug bug = bugService.getBugById(bugId);
+
+        requireProjectAccess(bug.getProject().getId(), currentUser);
     }
 
 }
